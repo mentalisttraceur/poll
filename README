@@ -1,0 +1,267 @@
+-= poll =-
+
+poll is a command-line tool to bring "poll(2)" syscall functionality to the
+command line, or in other words, to let a shell script or something like it to
+poll file descriptors for events.
+
+
+-= Why? =-
+
+Bourne shell (and its derivatives) are rather capable languages, but they lack
+any direct way to check file descriptors for status. This means that shell
+scripts often have to act on file descriptors blindly: even something as basic
+as checking if a pipe has input ready to be read, before actually blocking upon
+trying to read from it if there isn't any, isn't easy to do. Normally shell
+scripts don't need that functionality, but this should be useful for the cases
+when they do.
+
+"poll" tries to expose all events/flags that are available to the poll syscall
+on your system. It uses the same names as defined in the poll.h header, just
+with the "POLL" prefix stripped off (since it would be redundant in this
+context). So you can poll for whether a file descriptor had an error or (if
+applicable) if it has priority data that can be read, etc.
+
+For example, to see if input becomes available on stdin in the next 5 seconds:
+
+    # timeout is in milliseconds, just like the poll(2) syscall
+    poll -t 5000 IN
+    # poll's exit code OR output on stdout tells the result
+
+Now let's say you have a socket on file descriptor 3, and you want to check if
+it has any out-of-band priority data ready to be read, or if it is able to
+accept out-of-band priority data for writing, without blocking:
+
+With poll:
+
+    poll -t 0 3 RDBAND WRBAND
+
+Without poll:
+
+    ??? # I have no clue - suggestions welcome.
+
+
+-= Usage =-
+
+poll's syntax is pretty simple: it checks every argument to see if it's a file
+descriptor (non-negative integer), one of the supported options, or the name of
+one of the supported events. Events apply to the file descriptor(s) immediately
+before them on the command line: this gives some flexibility and prevents some
+repetition, without making the syntax too involved:
+
+    # poll for POLLIN and POLLRDBAND on 0 or 1, or POLLPRI on 3, 4, or 5:
+    poll 0 1 IN RDBAND 3 4 5 PRI
+
+    # the same file descriptor can be repeated:
+    poll 1 2 3 OUT 3 4 IN NVAL HUP
+
+    # If there's no file descriptor before the first event, then those events
+    # are implicitly applied to stdin (FD 0):
+    # poll for POLLIN on 0:
+    poll IN
+    # poll for POLLIN on 0 and POLLOUT on 1:
+    poll IN 1 OUT
+
+The only option that doesn't just print informative text is the timeout option:
+without this option, poll waits indefinitely for an event, as if the timeout
+was -1 in the poll(2) syscall.
+
+poll exits with 0 if one of the events polled for was matched, 1 if no polled
+events matched, and >=2 if there is an error. All events returned for a file
+descriptor are output on stdout, on one line, prefaced with the file descriptor
+polled, separated by spaces, like this:
+
+    0 IN HUP
+
+Even if you've specified the same file descriptor more than once, and there's a
+match in both lists, the output is merged on one line. Therefore, poll is easy
+to use both in shell scripts and interactively: In basic usecases, you can use
+the exit code directly in a shell if/while/until statement, for more complex
+usecases, a little use of read/grep/xargs/... can be used to parse the output.
+And as a human, the output is very readable.
+
+For example, let's say I do 'exec 3<>/tmp/fifo' during some earlier fiddling on
+an interactive shell, launch some background process that writes to /tmp/fifo
+when it does something useful, and then sometime later I want to see if data is
+ready, still interactively:
+
+    $ poll -t 0 3 IN # timeout is zero to not block at all
+    3 IN
+    $ echo $?
+    0
+    
+.. as you can see, poll's outout prints out the file descriptor and the event,
+and its exit code tells us one of the events we requested matched during the
+timeout. Let's try again, but this time after FD 3 has been closed:
+still have it open:
+
+    $ exec 3<&-
+    $ poll -t 0 3 IN 
+    3 NVAL
+    $ echo $?
+    1
+
+.. now, poll(2) tells us FD 3 isn't even a valid FD to poll (because it's not
+even open), and the poll command-line program faithfully reports all poll(2)
+"revents", so it prints the NVAL event on stdout. Exit code is 1, because we
+did not match any of the events. But, if we explicitly check for NVAL, then
+the exit code will be different:
+
+    $ poll -t 0 3 NVAL
+    3 NVAL
+    $ echo $?
+    0
+
+Finally, let's say one file descriptor is ready for writing, but not reading,
+and another isn't ready at all:
+
+    $ poll -t 0 3 4 IN OUT
+    3 OUT
+    $ echo $?
+    0
+    $ poll -t 0 4 IN OUT
+    $ echo $?
+    1
+
+..these examples are just reminders that there is no output when no events
+happen (including no always-polled events), and that the exit code is 0 (true)
+when any of the events match (output parsing is needed for distinguishing which
+events matched if you polled for multiple events).
+
+
+-= Limitations =-
+
+1. As with so many other things, this isn't immune to race conditions - between
+poll returning and the next shell command reading from the pipe, another
+process could interact with the same file/pipe/socket/whatever, changing its
+state. For example:
+
+    exec 3<>/tmp/fifo
+    poll 3 IN # blocks until data is available to read on FD 3
+    # Another process reads from /tmp/fifo after poll returns but before the
+    # next command executes
+    read <&3 # blocks again, because the other process "read the pipe dry"
+    
+..point being, this isn't concurrency control, just like the poll(2) syscall
+isn't either.
+
+
+2. The code needs to know at compile-time what events/revents flags are
+available in your poll.h - this imposes a nuisance on compile-time (e.g.
+-D_XOPEN_SOURCE at compile-time on some systems' gcc to even get the
+"(RD/WR)(NORM/BAND)" events). It also means the code has to have #ifdefs added
+for any non-universal events. Pull requests for any flags not currently
+supported are wellcome. I'm also open to adding an option to allow specifying a
+raw bitmask instead of just symbolic flag names, but for now I'm (possibly
+naively) optimistic that there isn't that many other system-specific poll flags
+out in the wild.
+
+
+3. Because poll is a separate command and not a shell builtin, it inherits the
+process descriptors the shell had at the time it was invoked: the vast majority
+of the time it shouldn't matter, but in some unlikely corner cases (e.g.
+background poll invocation, then close/open file descriptors for the entire
+shell session/process with "exec" redirections in the foreground) you could end
+up with poll waiting on file descriptors which are "stale". It takes a pretty
+contribed situation for this to be a problem, something like this:
+
+    exec 3<>/tmp/fifo
+    poll 3 IN | grep -Fq ' IN' &
+    exec 3<>/tmp/unrelated_fifo
+    wait $!
+    # By the time wait returns the result of the poll|grep pipe, file
+    # descriptor 3 in the shell points to a different open file description.
+
+..but it's just something to keep in mind.
+
+
+-= Rationale =-
+
+
+1. Return codes:
+
+I initially had the exit code be zero whenever execution succeeded, regardless
+of which events occured, if any. Since multiple events succeeding invariably
+causes you to have to parse the output to check which, I figured it wasn't a
+substantial burden. However, after some thought, I decided that this isn't the
+best approach for the command-line/shell-script use of poll.
+
+Ultimately, for many simple usecases, a simple "did any events match" is good
+enough, allowing you to avoid having to invoke any other commands, making the
+code using the poll command simpler and more efficient - meanwhile, the cost on
+the poll command to support this feature is very, very minimal.
+
+
+2. Explicitly polling for revent-only events:
+
+In the poll(2) syscall, NVAL, HUP, and ERR are always-checked, return-only
+flags: they are ignored if set in "events" and always checked for, so they may
+be set in revents even if they're not checked for. In other words, explicitly
+asking for them has no impact on anything.
+
+For the syscall, this makes perfect sense - it's useful to always check for
+them, because they're abnormal events that you don't expect, and if you do want
+to explicitly check for them, it's equally efficient as checking for any other
+event that you care about (possibly ~1 machine instruction less work, as you
+don't need to set any bits in the "events" field).
+
+But for the command line tool, the situation is different: if you want to check
+for a pollable event, you can either check the return code, or do text parsing
+on the output. If revent-only events were completely ignored in the arguments,
+then if you wanted to check for those events, you'd have to always do text
+parsing - the return code would tell you nothing. Therefore, it is beneficial
+to have explicitly querying for NVAL/HUP/ERR influence the exit code of the
+command line program itself, the same way that the other event names do.
+
+Personnaly, I have not been able to think of a situation where this could be a
+problem, unless some system's poll(2) violates POSIX/SUSv3 semantics and
+doesn't ignore NVAL/HUP/ERR bits in the events field, there may conceivably be
+an issue, if the semantics of having those flags set in that non-standard
+implementation are incompatible with these exit-code influencing semantics.
+
+
+3. Supporting specifying any file descriptors at all:
+
+I initially considered hardcoding FD 0 - for shell scripts, you could still get
+the same results thanks to the flexible file descriptor redirection of Bourne
+descendent shells. For example, these two are equivalent:
+
+    poll 3 IN
+    poll IN 0<&3
+
+..in all shells I know of, X<&Y and X>&Y are functionally identical (just call
+dup2(Y, X) syscall). Strictly pedantic shells might enforce "open for reading"
+vs "open for writing" semantics for those two redirects, but that just forces
+more care with which redirect to use. So output FDs could've easily been
+redirected to FD 0 too.
+
+But ultimately, I decided that the usability benefits of being able to specify
+a file descriptor directly substantially outweighed the benefits of minimalism:
+for one, poll might be useful in many different scripting/program-exec-ing
+contexts - not just the Bourne shell. I didn't want to substantially limit uses
+in environments where redirection wasn't as easy. Also, in my experience most
+programmers do not find the workings of file descriptor redirection, especially
+in Bourne shell syntax, intuitive.
+
+
+4. Allowing multiple file descriptors:
+
+I initially coded this whole thing, and wrote this readme, with the intent to
+not support more than one file descriptor per invocation - I thought this was
+workable enough, but when writing (and testing) examples of how to work around
+that minimalist implementation's limitations, I realized some usecases required
+an unwieldy amount of code to micromanage backgrounded poll invocations. Thus,
+I ended up adding support for multiple file descriptors in one invocation.
+
+
+5. Choosing the syntax:
+
+I initially conceived of a much more versatile syntax, allowing for much more
+arbitrarily complex combinations of file descriptors and events to be specified
+with even less repetition. After some thought, I decided not to go through with
+it, due to the fact that the syntax as is is already flexible enough for the
+majority of likely usecases I can think of.
+
+
+6. Merging identical file descriptors:
+
+When multiple file descriptors are specified,
