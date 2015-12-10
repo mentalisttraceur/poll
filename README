@@ -176,6 +176,11 @@ contribed situation for this to be a problem, something like this:
 
 -= Rationale =-
 
+This section enumerates the reasoning for making certain design choices. They
+are hopefully informative and perhaps convincing, but they are not absolutes in
+my mind: they reflect my current views, but I am open to having them debated,
+and to changing the code/design if convinced.
+
 
 1. Return codes:
 
@@ -264,4 +269,44 @@ majority of likely usecases I can think of.
 
 6. Merging identical file descriptors:
 
-When multiple file descriptors are specified,
+When multiple instances of the same file descriptor are specified, this tool
+merges them before doing the poll, and outputs just one line for each file
+descriptor. This seemed more intuitive and more generally useful than directly
+emulating the raw poll(2) interface which allows multiple entries for any file
+descriptors, and correspondingly returns results differently (in separate
+revents fields).
+
+
+7. malloc without free
+
+This is a general approach I take in cases where a program allocates memory
+that it's not going to give up until its end-of-life: Modern operating systems
+reclaim a process' memory pages automatically, and so calling free right prior
+to exiting is simply unnecessary overhead: the underlying memory management
+code will spend some time updating its own underlying metadata, and then on
+many systems, it may not even give up the memory to the operating system, due
+to how the freed memory might be laid out relative to other memory malloc has
+gotten from the OS and used or handed out. And if it does give it back to the
+OS, that'll be one more system call right before exiting. In short, computing
+waste with no gain, which I am very much against.
+
+On older or more crippled operating systems, ones which don't reclaim memory
+from an exiting program - well, if you're trying to use this poll command for
+something like that, then you've got to account not only freeing when exiting
+normally, but also install handlers for various signals, exceptions, or
+whatever applies in that operating system, to call free on abnormal exits too.
+If it were me, when porting programs to a platform with such a limitation, I'd
+write a transparent wrapper around the *alloc functions to install such handler
+code, keep track of what needs freeing to avoid double-frees, etc. In short,
+accounting for such systems really isn't the concern of a tool such as this.
+
+Code re-use isn't inherently impeded either - if this code ends up being reused
+in another program, I'd expect the re-user to understand the code well enough
+to notice that it never calls free, and add it if needed accordingly. (I do not
+subscribe to the "shouldn't have to think about it" school of thought about
+situations like this.)
+
+As for "good practice" more generally speaking: "good practice" ought not be
+just some absolute mores: they're rules of thumb to remind us of what's usually
+good: and in this case, I'd say none of the things that are good about freeing
+memory that you've malloc'ed apply here.
