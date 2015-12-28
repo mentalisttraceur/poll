@@ -496,9 +496,9 @@ int main(int argc, char * * argv)
    {
     pollSpecs[fdGroup_i].events |= pollSpecs[i].events;
     /* Fill up the now-unused hole in poll specification array: */
-    pollSpecs[i] = pollSpecs[nfds - 1];
-    fdNStrs[i] = fdNStrs[nfds - 1];
     nfds -= 1;
+    pollSpecs[i] = pollSpecs[nfds];
+    fdNStrs[i] = fdNStrs[nfds];
     i -= 1;
    }
   }
