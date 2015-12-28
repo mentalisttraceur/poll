@@ -1,4 +1,5 @@
 /*****************************************************************************\
+ * poll 1.0.0
  * Copyright (C) 2015-12-09 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
