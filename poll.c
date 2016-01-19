@@ -1,6 +1,6 @@
 /*****************************************************************************\
- * poll 1.0.0
- * Copyright (C) 2015-12-09 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
+ * poll 1.0.1
+ * Copyright (C) 2016-01-19 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public Licence as published by
@@ -455,7 +455,7 @@ int main(int argc, char * * argv)
   {
    (*argv)[len] = '\n';
    write(2, fdOverflowedInt, sizeof(fdOverflowedInt) - 1);
-   write(2, *argv, fdNStrs[nfds].n + 1);
+   write(2, *argv, len);
    return EXIT_SYNTAX_ERROR;
   }
   
