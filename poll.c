@@ -197,7 +197,6 @@ bool strIsEventFlagName
 
 short strToEventFlag(char const * str)
 {
- /*short static const requestableEventFlagCount = eventFlagCount - 3;*/
  for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
  {
   if(strIsEventFlagName(str, eventFlagMaps[i].name))
