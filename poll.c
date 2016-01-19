@@ -62,7 +62,7 @@ char const timeoutInvalid[] = "poll: invalid timeout value: ";
 
 char const helpText[] =
  "\n"
- "Usage: poll [OPTIONS] [[FD]... [EVENT]...]...\n"
+ "Usage: poll [OPTION] [[FD]... [EVENT]...]...\n"
  "\n"
  "Poll FDs (file descriptors, default is 0)* for events of interest.\n"
  "\n"
