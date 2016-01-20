@@ -1,5 +1,5 @@
 /*****************************************************************************\
- * poll 1.0.1
+ * poll 1.0.2
  * Copyright (C) 2016-01-19 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,9 +30,10 @@ _XOPEN_SOURCE or _GNU_SOURCE
 #include <limits.h> /* INT_MAX */
 
 #include <unistd.h> /* write */
+#include <sys/uio.h> /* writev, struct iovec */
+#include <errno.h> /* errno */
 #include <stdlib.h> /* malloc */
-#include <stdio.h> /* fprintf, perror */
-#include <string.h> /* strlen, strcmp, strncmp */
+#include <string.h> /* strlen, strcmp, strncmp, strerror */
 #include <poll.h> /* all poll-related definitions */
 
 #define STR_m(text) #text
@@ -59,6 +60,7 @@ char const timeoutOverflowedInt[]
 = "poll: timeout value greater than maximum possible: ";
 char const timeoutMissing[] = "poll: timeout option requires an argument\n";
 char const timeoutInvalid[] = "poll: invalid timeout value: ";
+char const pollColonHeader[] = "poll: ";
 
 char const helpText[] =
  "\n"
@@ -291,7 +293,15 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
  }
  else
  {
-  fprintf(stderr, "%s%s%s", unrecognizedOption, str - 1, helpText);
+  struct iovec errMsg[3];
+  errMsg[0].iov_base = (void * )unrecognizedOption;
+  errMsg[0].iov_len = sizeof(unrecognizedOption) - 1;
+  str -= 1;
+  errMsg[1].iov_base = str;
+  errMsg[1].iov_len = strlen(str);
+  errMsg[2].iov_base = (void * )helpText;
+  errMsg[2].iov_len = sizeof(helpText) - 1;
+  writev(2, errMsg, 3);
   return OPTION_PARSE_exit_failure;
  }
  
@@ -306,16 +316,24 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
  if(timeout == STR_TO_INT_overflow)
  {
   str[len] = '\n';
-  write(2, timeoutOverflowedInt, sizeof(timeoutOverflowedInt) - 1);
-  write(2, str, len + 1);
+  struct iovec errMsg[2];
+  errMsg[0].iov_base = (void * )timeoutOverflowedInt;
+  errMsg[0].iov_len = sizeof(timeoutOverflowedInt) - 1;
+  errMsg[1].iov_base = str;
+  errMsg[1].iov_len = len + 1;
+  writev(2, errMsg, 2);
   return OPTION_PARSE_exit_failure;
  }
  else
  if(timeout == STR_TO_INT_invalid)
  {
   str[len] = '\n';
-  write(2, timeoutInvalid, sizeof(timeoutInvalid) - 1);
-  write(2, str, len + 1);
+  struct iovec errMsg[2];
+  errMsg[0].iov_base = (void * )timeoutInvalid;
+  errMsg[0].iov_len = sizeof(timeoutInvalid) - 1;
+  errMsg[1].iov_base = str;
+  errMsg[1].iov_len = len + 1;
+  writev(2, errMsg, 2);
   return OPTION_PARSE_exit_failure;
  }
  return OPTION_PARSE_parse_bad;
@@ -413,7 +431,13 @@ int main(int argc, char * * argv)
  nstr_st * fdNStrs = malloc(nfds * (sizeof(nstr_st) + sizeof(struct pollfd)));
  if(!fdNStrs)
  {
-  perror("poll: ");
+  struct iovec errMsg[2];
+  errMsg[0].iov_base = (void * )pollColonHeader;
+  errMsg[0].iov_len = sizeof(pollColonHeader) - 1;
+  char * errStr = strerror(errno);
+  errMsg[1].iov_base = errStr;
+  errMsg[1].iov_len = strlen(errStr);
+  writev(2, errMsg, 2);
   return EXIT_EXECUTION_ERROR;
  }
  struct pollfd * pollSpecs = (void * )(fdNStrs + nfds);
@@ -453,8 +477,12 @@ int main(int argc, char * * argv)
   if(fd == STR_TO_INT_overflow)
   {
    (*argv)[len] = '\n';
-   write(2, fdOverflowedInt, sizeof(fdOverflowedInt) - 1);
-   write(2, *argv, len);
+   struct iovec errMsg[2];
+   errMsg[0].iov_base = (void * )fdOverflowedInt;
+   errMsg[0].iov_len = sizeof(fdOverflowedInt) - 1;
+   errMsg[1].iov_base = *argv;
+   errMsg[1].iov_len = len + 1;
+   writev(2, errMsg, 2);
    return EXIT_SYNTAX_ERROR;
   }
   
@@ -481,7 +509,14 @@ int main(int argc, char * * argv)
    continue;
   }
   
-  fprintf(stderr, "%s%s%s", unrecognizedEvent, *argv, eventList);
+  struct iovec errMsg[3];
+  errMsg[0].iov_base = (void * )unrecognizedEvent;
+  errMsg[0].iov_len = sizeof(unrecognizedEvent) - 1;
+  errMsg[1].iov_base = *argv;
+  errMsg[1].iov_len = len;
+  errMsg[2].iov_base = (void * )eventList;
+  errMsg[2].iov_len = sizeof(eventList) - 1;
+  writev(2, errMsg, 3);
   return EXIT_SYNTAX_ERROR;
  }
  /* Need to apply flags to last FD group: */
@@ -507,7 +542,13 @@ int main(int argc, char * * argv)
  int result = poll(pollSpecs, nfds, timeout);
  if(result < 0)
  {
-  perror("poll: ");
+  struct iovec errMsg[2];
+  errMsg[0].iov_base = (void * )pollColonHeader;
+  errMsg[0].iov_len = sizeof(pollColonHeader) - 1;
+  char * errStr = strerror(errno);
+  errMsg[1].iov_base = errStr;
+  errMsg[1].iov_len = strlen(errStr);
+  writev(2, errMsg, 2);
   return EXIT_EXECUTION_ERROR;
  }
  if(!result)
