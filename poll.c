@@ -60,7 +60,8 @@ char const timeoutOverflowedInt[]
 = "poll: timeout value greater than maximum possible: ";
 char const timeoutMissing[] = "poll: timeout option requires an argument\n";
 char const timeoutInvalid[] = "poll: invalid timeout value: ";
-char const pollColonHeader[] = "poll: ";
+char const mallocError[] = "poll: error allocating memory: ";
+char const pollError[] = "poll: error polling: ";
 
 char const helpText[] =
  "\n"
@@ -432,8 +433,8 @@ int main(int argc, char * * argv)
  if(!fdNStrs)
  {
   struct iovec errMsg[2];
-  errMsg[0].iov_base = (void * )pollColonHeader;
-  errMsg[0].iov_len = sizeof(pollColonHeader) - 1;
+  errMsg[0].iov_base = (void * )mallocError;
+  errMsg[0].iov_len = sizeof(mallocError) - 1;
   char * errStr = strerror(errno);
   errMsg[1].iov_base = errStr;
   errMsg[1].iov_len = strlen(errStr);
@@ -543,8 +544,8 @@ int main(int argc, char * * argv)
  if(result < 0)
  {
   struct iovec errMsg[2];
-  errMsg[0].iov_base = (void * )pollColonHeader;
-  errMsg[0].iov_len = sizeof(pollColonHeader) - 1;
+  errMsg[0].iov_base = (void * )pollError;
+  errMsg[0].iov_len = sizeof(pollError) - 1;
   char * errStr = strerror(errno);
   errMsg[1].iov_base = errStr;
   errMsg[1].iov_len = strlen(errStr);
