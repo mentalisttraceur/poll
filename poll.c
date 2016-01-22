@@ -1,6 +1,6 @@
 /*****************************************************************************\
- * poll 1.0.2
- * Copyright (C) 2016-01-19 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
+ * poll 1.0.3
+ * Copyright (C) 2016-01-22 Alexander Kozhevnikov <mentalisttraceur@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public Licence as published by
