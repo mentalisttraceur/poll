@@ -262,7 +262,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
  }
  if(!strcmp(str, "-help-events"))
  {
-  write(1, eventList + 1, sizeof(eventList) - 1);
+  write(1, eventList + 1, sizeof(eventList) - 2);
   return OPTION_PARSE_exit_success;
  }
  if(!strcmp(str, "-help-exits"))
