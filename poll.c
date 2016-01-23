@@ -60,7 +60,7 @@ char const timeoutOverflowedInt[]
 = "poll: timeout value greater than maximum possible: ";
 char const timeoutMissing[] = "poll: timeout option requires an argument\n";
 char const timeoutInvalid[] = "poll: invalid timeout value: ";
-char const mallocError[] = "poll: error allocating memory: ";
+char const unableToMalloc[] = "poll: unable to allocate memory\n";
 char const pollError[] = "poll: error polling: ";
 
 char const helpText[] =
@@ -432,13 +432,7 @@ int main(int argc, char * * argv)
  nstr_st * fdNStrs = malloc(nfds * (sizeof(nstr_st) + sizeof(struct pollfd)));
  if(!fdNStrs)
  {
-  struct iovec errMsg[2];
-  errMsg[0].iov_base = (void * )mallocError;
-  errMsg[0].iov_len = sizeof(mallocError) - 1;
-  char * errStr = strerror(errno);
-  errMsg[1].iov_base = errStr;
-  errMsg[1].iov_len = strlen(errStr);
-  writev(2, errMsg, 2);
+  write(2, unableToMalloc, sizeof(unableToMalloc) - 1);
   return EXIT_EXECUTION_ERROR;
  }
  struct pollfd * pollSpecs = (void * )(fdNStrs + nfds);
