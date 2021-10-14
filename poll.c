@@ -91,9 +91,6 @@ char const eventList[] =
 #ifdef POLLMSG
     " MSG"
 #endif
-#ifdef POLLREMOVE
-    " REMOVE"
-#endif
 #ifdef POLLRDHUP
     " RDHUP"
 #endif
@@ -135,9 +132,6 @@ eventFlagMap_st const eventFlagMaps[] =
 /* These flags seem to be Linux/GNU -specific: typically undefined. */
 #ifdef POLLMSG
     eventFlagMap_m(MSG),
-#endif
-#ifdef POLLREMOVE
-    eventFlagMap_m(REMOVE),
 #endif
 #ifdef POLLRDHUP
     eventFlagMap_m(RDHUP),
@@ -319,9 +313,6 @@ const size_t MAX_OUTPUT_LEN = sizeof
 #endif
 #ifdef POLLMSG
     " MSG"
-#endif
-#ifdef POLLREMOVE
-    " REMOVE"
 #endif
 #ifdef POLLRDHUP
     " RDHUP"
