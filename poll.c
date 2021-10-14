@@ -12,9 +12,9 @@ such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 #include <stdbool.h> /* bool */
 #include <limits.h> /* INT_MAX */
 
-#include <unistd.h> /* write */
 #include <sys/uio.h> /* writev, struct iovec */
 #include <errno.h> /* errno */
+#include <stdio.h> /* fputs, stderr, stdout */
 #include <stdlib.h> /* malloc */
 #include <string.h> /* strlen, strcmp, strncmp, strerror */
 #include <poll.h> /* all poll-related definitions */
@@ -238,17 +238,17 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     str += 1;
     if(!strcmp(str, "-help") || !strcmp(str, "h"))
     {
-        write(1, helpText, sizeof(helpText) - 1);
+        fputs(helpText, stdout);
         return OPTION_PARSE_exit_success;
     }
     if(!strcmp(str, "-help-events"))
     {
-        write(1, eventList, sizeof(eventList) - 1);
+        fputs(eventList, stdout);
         return OPTION_PARSE_exit_success;
     }
     if(!strcmp(str, "-help-exits"))
     {
-        write(1, exitCodes, sizeof(exitCodes) - 1);
+        fputs(exitCodes, stdout);
         return OPTION_PARSE_exit_success;
     }
  
@@ -258,7 +258,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         str = *strs;
         if(!str)
         {
-            write(2, timeoutMissing, sizeof(timeoutMissing) - 1);
+            fputs(timeoutMissing, stderr);
             return OPTION_PARSE_exit_failure;
         }
         *strsPtr = strs;
@@ -362,7 +362,7 @@ void printEventFlags(short flags, nstr_st fdNStr)
         }
     }
     *outputBufferPtr = '\n';
-    write(1, outputBuffer, outputBufferPtr + 1 - outputBuffer);
+    fputs(outputBuffer, stdout);
 }
 
 /*\
@@ -411,7 +411,7 @@ int main(int argc, char * * argv)
     nstr_st * fdNStrs = malloc(nfds * (sizeof(nstr_st) + sizeof(struct pollfd)));
     if(!fdNStrs)
     {
-        write(2, unableToMalloc, sizeof(unableToMalloc) - 1);
+        fputs(unableToMalloc, stderr);
         return EXIT_EXECUTION_ERROR;
     }
     struct pollfd * pollSpecs = (void * )(fdNStrs + nfds);
