@@ -24,7 +24,7 @@ such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 #define EXIT_POLLED_EVENT_OR_INFO 0
 #define EXIT_UNPOLLED_EVENT 1
 #define EXIT_NO_EVENT 2
-#define EXIT_SYNTAX_ERROR 3
+#define EXIT_USAGE_ERROR 3
 #define EXIT_EXECUTION_ERROR 4
 
 typedef struct
@@ -67,7 +67,7 @@ char const exitCodes[] =
           "  An always-polled event that was not explicitly polled occurred.\n"
     "  " STR_MACRO_m(EXIT_NO_EVENT)
           "  No events occurred before timeout ended.\n"
-    "  " STR_MACRO_m(EXIT_SYNTAX_ERROR)
+    "  " STR_MACRO_m(EXIT_USAGE_ERROR)
           "  Syntax error in how the poll command was called.\n"
     "  " STR_MACRO_m(EXIT_EXECUTION_ERROR)
           "  Error when trying to carry out the poll command.\n"
@@ -436,7 +436,7 @@ int main(int argc, char * * argv)
             fputs(fdOverflowedInt, stderr);
             fputs(*argv, stderr);
             fputc('\n', stderr);
-            return EXIT_SYNTAX_ERROR;
+            return EXIT_USAGE_ERROR;
         }
   
         if(*argv[0] != '-')
@@ -445,7 +445,7 @@ int main(int argc, char * * argv)
             if(optionParseResult == OPTION_PARSE_exit_success)
                 return EXIT_POLLED_EVENT_OR_INFO;
             if(optionParseResult == OPTION_PARSE_exit_failure)
-                return EXIT_SYNTAX_ERROR;
+                return EXIT_USAGE_ERROR;
             if(optionParseResult == OPTION_PARSE_parse_good)
                 continue;
         }
@@ -460,7 +460,7 @@ int main(int argc, char * * argv)
         fputs(unrecognizedEvent, stderr);
         fputs(*argv, stderr);
         fputc('\n', stderr);
-        return EXIT_SYNTAX_ERROR;
+        return EXIT_USAGE_ERROR;
     }
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs, fdNStrs);
