@@ -12,9 +12,8 @@ such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 #include <stdbool.h> /* bool */
 #include <limits.h> /* INT_MAX */
 
-#include <sys/uio.h> /* writev, struct iovec */
 #include <errno.h> /* errno */
-#include <stdio.h> /* fputs, stderr, stdout */
+#include <stdio.h> /* fputc, fputs, perror, stderr, stdout */
 #include <stdlib.h> /* malloc */
 #include <string.h> /* strlen, strcmp, strncmp, strerror */
 #include <poll.h> /* all poll-related definitions */
@@ -275,13 +274,9 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     }
     else
     {
-        struct iovec errMsg[3];
-        errMsg[0].iov_base = (void * )unrecognizedOption;
-        errMsg[0].iov_len = sizeof(unrecognizedOption) - 1;
-        str -= 1;
-        errMsg[1].iov_base = str;
-        errMsg[1].iov_len = strlen(str);
-        writev(2, errMsg, 2);
+        fputs(unrecognizedOption, stderr);
+        fputs(str, stderr);
+        fputc('\n', stderr);
         return OPTION_PARSE_exit_failure;
     }
  
@@ -295,25 +290,17 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     else
     if(timeout == STR_TO_INT_overflow)
     {
-        str[len] = '\n';
-        struct iovec errMsg[2];
-        errMsg[0].iov_base = (void * )timeoutOverflowedInt;
-        errMsg[0].iov_len = sizeof(timeoutOverflowedInt) - 1;
-        errMsg[1].iov_base = str;
-        errMsg[1].iov_len = len + 1;
-        writev(2, errMsg, 2);
+        fputs(timeoutOverflowedInt, stderr);
+        fputs(str, stderr);
+        fputc('\n', stderr);
         return OPTION_PARSE_exit_failure;
     }
     else
     if(timeout == STR_TO_INT_invalid)
     {
-        str[len] = '\n';
-        struct iovec errMsg[2];
-        errMsg[0].iov_base = (void * )timeoutInvalid;
-        errMsg[0].iov_len = sizeof(timeoutInvalid) - 1;
-        errMsg[1].iov_base = str;
-        errMsg[1].iov_len = len + 1;
-        writev(2, errMsg, 2);
+        fputs(timeoutInvalid, stderr);
+        fputs(str, stderr);
+        fputc('\n', stderr);
         return OPTION_PARSE_exit_failure;
     }
     return OPTION_PARSE_parse_bad;
@@ -450,13 +437,9 @@ int main(int argc, char * * argv)
         else
         if(fd == STR_TO_INT_overflow)
         {
-            (*argv)[len] = '\n';
-            struct iovec errMsg[2];
-            errMsg[0].iov_base = (void * )fdOverflowedInt;
-            errMsg[0].iov_len = sizeof(fdOverflowedInt) - 1;
-            errMsg[1].iov_base = *argv;
-            errMsg[1].iov_len = len + 1;
-            writev(2, errMsg, 2);
+            fputs(fdOverflowedInt, stderr);
+            fputs(*argv, stderr);
+            fputc('\n', stderr);
             return EXIT_SYNTAX_ERROR;
         }
   
@@ -483,12 +466,9 @@ int main(int argc, char * * argv)
             continue;
         }
   
-        struct iovec errMsg[3];
-        errMsg[0].iov_base = (void * )unrecognizedEvent;
-        errMsg[0].iov_len = sizeof(unrecognizedEvent) - 1;
-        errMsg[1].iov_base = *argv;
-        errMsg[1].iov_len = len;
-        writev(2, errMsg, 2);
+        fputs(unrecognizedEvent, stderr);
+        fputs(*argv, stderr);
+        fputc('\n', stderr);
         return EXIT_SYNTAX_ERROR;
     }
     /* Need to apply flags to last FD group: */
@@ -514,13 +494,7 @@ int main(int argc, char * * argv)
     int result = poll(pollSpecs, nfds, timeout);
     if(result < 0)
     {
-        struct iovec errMsg[2];
-        errMsg[0].iov_base = (void * )pollError;
-        errMsg[0].iov_len = sizeof(pollError) - 1;
-        char * errStr = strerror(errno);
-        errMsg[1].iov_base = errStr;
-        errMsg[1].iov_len = strlen(errStr);
-        writev(2, errMsg, 2);
+        perror(pollError);
         return EXIT_EXECUTION_ERROR;
     }
     if(!result)
