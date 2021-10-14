@@ -3,9 +3,9 @@
 
 /*\
 NOTE: some poll events might not be defined when compiling with default
-settings, depending on your system, compiler, etc. Typically, this can be
-fixed by defining the right macro to enable/expose those events, such as
-_XOPEN_SOURCE or _GNU_SOURCE
+settings, depending on your system, compiler, etc. Typically, this can
+be fixed by defining the right macro to enable/expose those events,
+such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 \*/
 
 #include <stddef.h> /* size_t */
