@@ -224,16 +224,11 @@ int strToInt(char const * str, size_t * lenPtr)
 #define OPTION_PARSE_exit_success 0
 #define OPTION_PARSE_exit_failure 1
 #define OPTION_PARSE_parse_good 2
-#define OPTION_PARSE_parse_bad 3
 int parseOption(char * * * strsPtr, int * timeoutPtr)
 {
     char * * strs = *strsPtr;
     char * str = *strs;
  
-    if(str[0] != '-')
-    {
-        return OPTION_PARSE_parse_bad;
-    }
     str += 1;
     if(!strcmp(str, "-help") || !strcmp(str, "h"))
     {
@@ -303,7 +298,8 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         fputc('\n', stderr);
         return OPTION_PARSE_exit_failure;
     }
-    return OPTION_PARSE_parse_bad;
+    /* should not be reached */
+    return OPTION_PARSE_exit_failure;
 }
 
 const size_t MAX_OUTPUT_LEN = sizeof
@@ -443,20 +439,15 @@ int main(int argc, char * * argv)
             return EXIT_SYNTAX_ERROR;
         }
   
-        int optionParseResult = parseOption(&argv, &timeout);
-        if(optionParseResult == OPTION_PARSE_exit_success)
+        if(*argv[0] != '-')
         {
-            return EXIT_POLLED_EVENT_OR_INFO;
-        }
-        else
-        if(optionParseResult == OPTION_PARSE_exit_failure)
-        {
-            return EXIT_SYNTAX_ERROR;
-        }
-        else
-        if(optionParseResult == OPTION_PARSE_parse_good)
-        {
-            continue;
+            int optionParseResult = parseOption(&argv, &timeout);
+            if(optionParseResult == OPTION_PARSE_exit_success)
+                return EXIT_POLLED_EVENT_OR_INFO;
+            if(optionParseResult == OPTION_PARSE_exit_failure)
+                return EXIT_SYNTAX_ERROR;
+            if(optionParseResult == OPTION_PARSE_parse_good)
+                continue;
         }
   
         short flag = strToEventFlag(*argv);
