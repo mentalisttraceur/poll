@@ -47,7 +47,6 @@ char const unableToMalloc[] = "poll: unable to allocate memory\n";
 char const pollError[] = "poll: error polling: ";
 
 char const helpText[] =
-    "\n"
     "Usage: poll [OPTION] [[FD]... [EVENT]...]...\n"
     "\n"
     "Poll FDs (file descriptors, default is 0)* for events of interest.\n"
@@ -240,7 +239,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     str += 1;
     if(!strcmp(str, "-help") || !strcmp(str, "h"))
     {
-        write(1, helpText + 1, sizeof(helpText) - 2);
+        write(1, helpText, sizeof(helpText) - 1);
         return OPTION_PARSE_exit_success;
     }
     if(!strcmp(str, "-help-events"))
@@ -283,9 +282,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         str -= 1;
         errMsg[1].iov_base = str;
         errMsg[1].iov_len = strlen(str);
-        errMsg[2].iov_base = (void * )helpText;
-        errMsg[2].iov_len = sizeof(helpText) - 1;
-        writev(2, errMsg, 3);
+        writev(2, errMsg, 2);
         return OPTION_PARSE_exit_failure;
     }
  
