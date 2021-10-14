@@ -223,7 +223,7 @@ int strToInt(char const * str, size_t * lenPtr)
 
 #define OPTION_PARSE_exit_success 0
 #define OPTION_PARSE_exit_failure 1
-#define OPTION_PARSE_parse_good 2
+#define OPTION_PARSE_continue 2
 int parseOption(char * * * strsPtr, int * timeoutPtr)
 {
     char * * strs = *strsPtr;
@@ -272,7 +272,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         fputs(unrecognizedOption, stderr);
         fputs(str, stderr);
         fputc('\n', stderr);
-        return OPTION_PARSE_exit_failure;
+        return OPTION_PARSE_continue;
     }
  
     size_t len;
@@ -446,8 +446,7 @@ int main(int argc, char * * argv)
                 return EXIT_POLLED_EVENT_OR_INFO;
             if(optionParseResult == OPTION_PARSE_exit_failure)
                 return EXIT_USAGE_ERROR;
-            if(optionParseResult == OPTION_PARSE_parse_good)
-                continue;
+            continue;
         }
   
         short flag = strToEventFlag(*argv);
