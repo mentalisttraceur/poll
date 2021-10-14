@@ -238,7 +238,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         return OPTION_PARSE_parse_bad;
     }
     str += 1;
-    if(!strcmp(str, "h") || !strcmp(str, "-help"))
+    if(!strcmp(str, "-help") || !strcmp(str, "h"))
     {
         write(1, helpText + 1, sizeof(helpText) - 2);
         return OPTION_PARSE_exit_success;
@@ -254,7 +254,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         return OPTION_PARSE_exit_success;
     }
  
-    if(!strcmp(str, "t") || !strcmp(str, "-timeout"))
+    if(!strcmp(str, "-timeout") || !strcmp(str, "t"))
     {
         strs += 1;
         str = *strs;
@@ -266,14 +266,14 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         *strsPtr = strs;
     }
     else
-    if(str[0] == 't')
-    {
-        str += 1;
-    }
-    else
     if(!strncmp(str, "-timeout=", 9))
     {
         str += 9;
+    }
+    else
+    if(str[0] == 't')
+    {
+        str += 1;
     }
     else
     {
