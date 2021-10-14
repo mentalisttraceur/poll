@@ -75,7 +75,6 @@ char const exitCodes[] =
 ;
 
 char const eventList[] =
-    "\n"
     "Pollable events:\n"
     "  IN PRI OUT"
 #ifdef POLLRDNORM
@@ -244,7 +243,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     }
     if(!strcmp(str, "-help-events"))
     {
-        write(1, eventList + 1, sizeof(eventList) - 2);
+        write(1, eventList, sizeof(eventList) - 1);
         return OPTION_PARSE_exit_success;
     }
     if(!strcmp(str, "-help-exits"))
@@ -489,9 +488,7 @@ int main(int argc, char * * argv)
         errMsg[0].iov_len = sizeof(unrecognizedEvent) - 1;
         errMsg[1].iov_base = *argv;
         errMsg[1].iov_len = len;
-        errMsg[2].iov_base = (void * )eventList;
-        errMsg[2].iov_len = sizeof(eventList) - 1;
-        writev(2, errMsg, 3);
+        writev(2, errMsg, 2);
         return EXIT_SYNTAX_ERROR;
     }
     /* Need to apply flags to last FD group: */
