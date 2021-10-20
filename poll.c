@@ -274,7 +274,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     if(timeout >= 0)
     {
         *timeoutPtr = timeout;
-        return OPTION_PARSE_parse_good;
+        return OPTION_PARSE_continue;
     }
     else
     if(timeout == STR_TO_INT_overflow)
