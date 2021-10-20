@@ -14,7 +14,7 @@ such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 
 #include <errno.h> /* errno */
 #include <stdio.h> /* fputc, fputs, perror, stderr, stdout */
-#include <stdlib.h> /* malloc */
+#include <stdlib.h> /* calloc */
 #include <string.h> /* strlen, strcmp, strncmp, strerror */
 #include <poll.h> /* all poll-related definitions */
 
@@ -375,11 +375,11 @@ int main(int argc, char * * argv)
     }
  
     /*\
-    This "overallocates" a few slots in most cases, but on most platforms, malloc
+    This "overallocates" a few slots in most cases, but on most platforms, calloc
     will overallocate much more internally (one memory page or more) either way.
     \*/
-    nstr_st * fdNStrs = malloc(nfds * sizeof(nstr_st));
-    struct pollfd * pollSpecs = malloc(nfds * sizeof(struct pollfd));
+    nstr_st * fdNStrs = calloc(nfds, sizeof(nstr_st));
+    struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
     if(!fdNStrs || !pollSpecs)
     {
         fputs(unableToMalloc, stderr);
