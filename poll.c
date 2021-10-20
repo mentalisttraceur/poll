@@ -179,10 +179,9 @@ short strToEventFlag(char const * str)
 
 #define STR_TO_INT_overflow -1
 #define STR_TO_INT_invalid -2
-int strToInt(char const * str, size_t * lenPtr)
+int strToInt(char const * str)
 {
     int val = 0;
-    size_t len = 0;
     for(int c; c = *str; str += 1)
     {
         if(c < '0' || c > '9')
@@ -197,14 +196,12 @@ int strToInt(char const * str, size_t * lenPtr)
             if(val <= INT_MAX - c)
             {
                 val += c;
-                len += 1;
                 continue;
             }
         }
         val = STR_TO_INT_overflow;
         break;
     }
-    *lenPtr = len + strlen(str);
     return val;
 }
 
@@ -262,8 +259,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
         return OPTION_PARSE_continue;
     }
  
-    size_t len;
-    int timeout = strToInt(str, &len);
+    int timeout = strToInt(str);
     if(timeout >= 0)
     {
         *timeoutPtr = timeout;
@@ -395,8 +391,7 @@ int main(int argc, char * * argv)
     char * * argvCopy = argv;
     for(; *argv; argv += 1)
     {
-        size_t len;
-        int fd = strToInt(*argv, &len);
+        int fd = strToInt(*argv);
         if(fd >= 0)
         {
             /* If there were flags since the last FD, we need to apply them: */
