@@ -339,7 +339,7 @@ void printEventFlags(short flags, nstr_st fdNStr)
     fputs(outputBuffer, stdout);
 }
 
-inline void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
+static void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
                                struct pollfd * pollSpecs, nstr_st * fdNStrs)
 {
     /*\
