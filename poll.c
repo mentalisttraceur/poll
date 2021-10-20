@@ -339,8 +339,9 @@ void printEventFlags(short flags, nstr_st fdNStr)
     fputs(outputBuffer, stdout);
 }
 
-static void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
-                               struct pollfd * pollSpecs, nstr_st * fdNStrs)
+static
+void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
+                         struct pollfd * pollSpecs, nstr_st * fdNStrs)
 {
     /*\
     If no prior FD arguments, increment nfds to use the default pollSpec as this
