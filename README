@@ -1,5 +1,11 @@
 -= poll =-
 
+NOTE:
+
+1. poll is in the middle of refactor/redesign/changes, so
+2. poll.c is currently at least partially broken.
+3. If you want the last stable version, go back to the commits from before 2021.
+
 poll is a command-line tool to bring "poll(2)" syscall functionality to the
 command line, or in other words, to let a shell script or something like it to
 poll file descriptors for events.
