@@ -341,7 +341,7 @@ void printEventFlags(short flags, nstr_st fdNStr)
 
 static
 void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
-                         struct pollfd * pollSpecs, nstr_st * fdNStrs)
+                         struct pollfd * pollSpecs)
 {
     /*\
     If no prior FD arguments, increment nfds to use the default pollSpec as this
@@ -409,7 +409,7 @@ int main(int argc, char * * argv)
             /* If there were flags since the last FD, we need to apply them: */
             if(flags)
             {
-                applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs, fdNStrs);
+                applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs);
                 /* Reset flags for next group. */
                 flags = 0;
             }
@@ -450,7 +450,7 @@ int main(int argc, char * * argv)
         return EXIT_USAGE_ERROR;
     }
     /* Need to apply flags to last FD group: */
-    applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs, fdNStrs);
+    applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs);
  
     /* Merge multiple entries for the same file descriptor. */
     for(fdGroup_i = 0; fdGroup_i < (nfds - 1); fdGroup_i += 1)
