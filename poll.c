@@ -27,13 +27,6 @@ such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 #define EXIT_USAGE_ERROR 3
 #define EXIT_EXECUTION_ERROR 4
 
-typedef struct
-{
-    size_t n;
-    char * m;
-}
-nstr_st;
-
 char const unrecognizedOption[] = "poll: Unrecognized option: ";
 char const unrecognizedEvent[] = "poll: Unrecognized event: ";
 char const fdOverflowedInt[]
@@ -319,11 +312,11 @@ const size_t MAX_OUTPUT_LEN = sizeof
 #endif
 );
 
-void printEventFlags(short flags, nstr_st fdNStr)
+void printEventFlags(short flags, char * fdStr)
 {
     char outputBuffer[MAX_OUTPUT_LEN];
-    char * outputBufferPtr = outputBuffer + fdNStr.n;
-    memcpy(outputBuffer, fdNStr.m, fdNStr.n);
+    char * outputBufferPtr = outputBuffer + strlen(fdStr);
+    strcpy(outputBuffer, fdStr);
     for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
     {
         if(eventFlagMaps[i].flag & flags)
@@ -379,7 +372,7 @@ int main(int argc, char * * argv)
     This "overallocates" a few slots in most cases, but on most platforms, calloc
     will overallocate much more internally (one memory page or more) either way.
     \*/
-    nstr_st * fdNStrs = calloc(nfds, sizeof(nstr_st));
+    char * * fdStrs = calloc(nfds, sizeof(char *));
     struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
     if(!fdNStrs || !pollSpecs)
     {
@@ -391,7 +384,7 @@ int main(int argc, char * * argv)
     nfds = 0;
 
     pollSpecs[0].fd = 0;
-    fdNStrs[0] = (nstr_st ){ .n = 1, .m = "0" };
+    fdStrs[0] = "0";
  
     /* Default timeout is no timeout */
     int timeout = -1;
@@ -414,7 +407,7 @@ int main(int argc, char * * argv)
                 flags = 0;
             }
             pollSpecs[nfds].fd = fd;
-            fdNStrs[nfds] = (nstr_st ){ .n = len, .m = *argv };
+            fdStrs[nfds] = *argv;
             nfds += 1;
             continue;
         }
