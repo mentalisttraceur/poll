@@ -100,8 +100,8 @@ eventFlagMap_st;
 eventFlagMap_st const eventFlagMaps[] =
 {
     eventFlagMap_m(IN),
-    eventFlagMap_m(PRI),
     eventFlagMap_m(OUT),
+    eventFlagMap_m(PRI),
 /* These flags used to be in a POSIX extention: sometimes undefined. */
 #ifdef POLLRDNORM
     eventFlagMap_m(RDNORM),
@@ -270,7 +270,7 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
 
 const size_t MAX_OUTPUT_LEN = sizeof
 (
-    STR_MACRO_m(INT_MAX) " IN PRI OUT ERR HUP NVAL\n"
+    STR_MACRO_m(INT_MAX) " IN OUT PRI ERR HUP NVAL\n"
 #ifdef POLLRDNORM
     " RDNORM"
 #endif
