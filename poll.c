@@ -13,7 +13,7 @@ define a processor macro such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
 #include <errno.h> /* errno */
 #include <stdio.h> /* fputc, fputs, perror, stderr, stdout */
 #include <stdlib.h> /* calloc */
-#include <string.h> /* strlen, strcmp, strncmp, strerror */
+#include <string.h> /* strlen, strcmp, strncmp */
 #include <poll.h> /* all poll-related definitions */
 
 #define STR_m(text) #text
