@@ -319,9 +319,8 @@ void printEventFlags(short flags, char * fdStr)
         {
             *outputBufferPtr = ' ';
             outputBufferPtr += 1;
-            size_t len = strlen(eventFlagMaps[i].name);
-            memcpy(outputBufferPtr, eventFlagMaps[i].name, len);
-            outputBufferPtr += len;
+            strcpy(outputBufferPtr, eventFlagMaps[i].name);
+            outputBufferPtr += strlen(eventFlagMaps[i].name);
         }
     }
     *outputBufferPtr = '\n';
