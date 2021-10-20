@@ -39,36 +39,31 @@ char const unableToMalloc[] = "poll: unable to allocate memory\n";
 char const pollError[] = "poll: error polling: ";
 
 char const helpText[] =
-    "Usage: poll [OPTION] [[FD]... [EVENT]...]...\n"
+    "Wait until at least one event happens on at least one file descriptor.\n"
     "\n"
-    "Poll FDs (file descriptors, default is 0)* for events of interest.\n"
+    "Usage:\n"
+    "    poll [--timeout=<timeout>] [[<descriptor>]... [<event>]...]...\n"
+    "    poll (--help | --version)\n"
     "\n"
-    "  -h, --help            Print this help text and exit.\n"
-    "      --help-events     List possible FD events and exit.\n"
-    "      --help-exits      List exit code meanings and exit.\n"
-    "  -t, --timeout=TIMEOUT How long to wait for events (in milliseconds).\n"
+    "Options:\n"
+    "    -h --help               show this help text\n"
+    "    -V --version            show version text\n"
+    "    -t --timeout=<timeout>  upper limit on waiting (in milliseconds)\n"
     "\n"
-    " * File descriptors are expected to be non-negative integers.\n"
-;
- 
-char const exitCodes[] =
-    "Exit codes:\n"
+    "Exits:\n"
+    "    " STR_MACRO_m(EXIT_POLLED_EVENT_OR_INFO)
+    "  got only events that were asked for\n"
+    "    " STR_MACRO_m(EXIT_UNPOLLED_EVENT)
+    "  got at least one always-polled event that was not asked for\n"
+    "    " STR_MACRO_m(EXIT_NO_EVENT)
+    "  got no events within <timeout> milliseconds\n"
+    "    " STR_MACRO_m(EXIT_USAGE_ERROR)
+    "  error in how the poll command was called\n"
+    "    " STR_MACRO_m(EXIT_EXECUTION_ERROR)
+    "  error when trying to carry out the poll command\n"
     "\n"
-    "  " STR_MACRO_m(EXIT_POLLED_EVENT_OR_INFO)
-          "  A polled event occurred, or help info printed.\n"
-    "  " STR_MACRO_m(EXIT_UNPOLLED_EVENT)
-          "  An always-polled event that was not explicitly polled occurred.\n"
-    "  " STR_MACRO_m(EXIT_NO_EVENT)
-          "  No events occurred before timeout ended.\n"
-    "  " STR_MACRO_m(EXIT_USAGE_ERROR)
-          "  Syntax error in how the poll command was called.\n"
-    "  " STR_MACRO_m(EXIT_EXECUTION_ERROR)
-          "  Error when trying to carry out the poll command.\n"
-;
-
-char const eventList[] =
-    "Pollable events:\n"
-    "  IN PRI OUT"
+    "Normal events:\n"
+    "    IN OUT PRI"
 #ifdef POLLRDNORM
     " RDNORM"
 #endif
@@ -89,10 +84,8 @@ char const eventList[] =
 #endif
     "\n"
     "\n"
-    "Always-polled events (polling these only effects exit code if they occur):\n"
-    "  ERR HUP NVAL\n"
-    "\n"
-    "See your system's poll documentation for each event's exact meaning.\n"
+    "Always-polled events:\n"
+    "    ERR HUP NVAL\n"
 ;
 
 typedef struct
@@ -217,16 +210,6 @@ int parseOption(char * * * strsPtr, int * timeoutPtr)
     if(!strcmp(str, "-help") || !strcmp(str, "h"))
     {
         fputs(helpText, stdout);
-        return OPTION_PARSE_exit_success;
-    }
-    if(!strcmp(str, "-help-events"))
-    {
-        fputs(eventList, stdout);
-        return OPTION_PARSE_exit_success;
-    }
-    if(!strcmp(str, "-help-exits"))
-    {
-        fputs(exitCodes, stdout);
         return OPTION_PARSE_exit_success;
     }
  
