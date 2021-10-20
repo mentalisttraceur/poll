@@ -369,13 +369,13 @@ int main(int argc, char * * argv)
     \*/
     char * * fdStrs = calloc(nfds, sizeof(char *));
     struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
-    if(!fdNStrs || !pollSpecs)
+    if(!fdStrs || !pollSpecs)
     {
         fputs(unableToMalloc, stderr);
         return EXIT_EXECUTION_ERROR;
     }
  
-    /* Now nfds will index into pollSpecs and fdNStrs */
+    /* Now nfds will index into pollSpecs and fdStrs */
     nfds = 0;
 
     pollSpecs[0].fd = 0;
@@ -450,7 +450,7 @@ int main(int argc, char * * argv)
                 /* Fill up the now-unused hole in poll specification array: */
                 nfds -= 1;
                 pollSpecs[i] = pollSpecs[nfds];
-                fdNStrs[i] = fdNStrs[nfds];
+                fdStrs[i] = fdStrs[nfds];
                 i -= 1;
             }
         }
@@ -471,7 +471,7 @@ int main(int argc, char * * argv)
     {
         if(pollSpecs[fdGroup_i].revents)
         {
-            printEventFlags(pollSpecs[fdGroup_i].revents, fdNStrs[fdGroup_i]);
+            printEventFlags(pollSpecs[fdGroup_i].revents, fdStrs[fdGroup_i]);
             if(pollSpecs[fdGroup_i].revents & pollSpecs[fdGroup_i].events)
             {
                 exitcode = EXIT_POLLED_EVENT_OR_INFO;
