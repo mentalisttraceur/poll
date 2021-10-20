@@ -339,10 +339,6 @@ void printEventFlags(short flags, nstr_st fdNStr)
     fputs(outputBuffer, stdout);
 }
 
-/*\
-Repeated code hoisted up into inline function (I personally think a macro is
-better, but I presume this is nicer for people's syntax highlighting, etc.)
-\*/
 inline void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
                                struct pollfd * pollSpecs, nstr_st * fdNStrs)
 {
