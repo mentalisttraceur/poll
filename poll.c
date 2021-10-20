@@ -426,7 +426,7 @@ int main(int argc, char * * argv)
             return EXIT_USAGE_ERROR;
         }
   
-        if(*argv[0] != '-')
+        if(*argv[0] == '-')
         {
             int optionParseResult = parseOption(&argv, &timeout);
             if(optionParseResult == OPTION_PARSE_exit_success)
