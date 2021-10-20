@@ -378,13 +378,13 @@ int main(int argc, char * * argv)
     This "overallocates" a few slots in most cases, but on most platforms, malloc
     will overallocate much more internally (one memory page or more) either way.
     \*/
-    nstr_st * fdNStrs = malloc(nfds * (sizeof(nstr_st) + sizeof(struct pollfd)));
-    if(!fdNStrs)
+    nstr_st * fdNStrs = malloc(nfds * sizeof(nstr_st));
+    struct pollfd * pollSpecs = malloc(nfds * sizeof(struct pollfd));
+    if(!fdNStrs || !pollSpecs)
     {
         fputs(unableToMalloc, stderr);
         return EXIT_EXECUTION_ERROR;
     }
-    struct pollfd * pollSpecs = (void * )(fdNStrs + nfds);
  
     /* Now nfds will index into pollSpecs and fdNStrs */
     nfds = 0;
