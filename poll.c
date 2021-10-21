@@ -466,7 +466,6 @@ int main(int argc, char * * argv)
     short flags = 0;
     nfds_t fdGroup_i = 0;
  
-    char * * argvCopy = argv;
     for(; *argv; argv += 1)
     {
         int fd;
