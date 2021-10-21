@@ -3,7 +3,8 @@
 
 /*\
 NOTE: some poll events might not be defined by default unless you
-define a processor macro such as `_XOPEN_SOURCE` or `_GNU_SOURCE`.
+define a processor macro such as `_XOPEN_SOURCE` or `_GNU_SOURCE`
+before any `#include` directive.
 \*/
 
 #include <stddef.h> /* size_t */
