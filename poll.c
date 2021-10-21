@@ -232,7 +232,7 @@ static
 int print_help(char * arg0)
 {
     if(fputs(help_text, stdout) != EOF
-    && fflush(stdout) ! EOF)
+    && fflush(stdout) != EOF)
     {
         return EXIT_ASKED_EVENT_OR_INFO;
     }
@@ -244,7 +244,7 @@ static
 int print_version(char * arg0)
 {
     if(fputs(version_text, stdout) != EOF
-    && fflush(stdout) ! EOF)
+    && fflush(stdout) != EOF)
     {
         return EXIT_ASKED_EVENT_OR_INFO;
     }
