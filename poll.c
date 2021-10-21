@@ -253,16 +253,13 @@ int print_version(char * arg0)
 }
 
 
-int strIsEventFlagName(char const * str, char const * eventFlagName)
+static
+int match_event_name(char const * string, char const * name)
 {
-    for
-    (
-        unsigned char str_c, eventFlagName_c;
-        (str_c = *str) && (eventFlagName_c = *eventFlagName);
-        str += 1, eventFlagName += 1
-    )
+    unsigned char string_character, name_character;
+    while((string_character = *string++) && (name_character = *name++))
     {
-        if(toupper(str_c) != eventFlagName_c)
+        if(toupper(string_character) != name_character)
         {
             return 0;
         }
@@ -270,15 +267,18 @@ int strIsEventFlagName(char const * str, char const * eventFlagName)
     return 1;
 }
 
+
 #define EVENT_FLAG_COUNT (sizeof(eventFlagMaps) / sizeof(eventFlagMap_st))
 
-short strToEventFlag(char const * str)
+static
+short parse_event(char const * string)
 {
-    for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
+    size_t index;
+    for(index = 0; index < EVENT_FLAG_COUNT; index += 1)
     {
-        if(strIsEventFlagName(str, eventFlagMaps[i].name))
+        if(match_event_name(string, eventFlagMaps[index].name))
         {
-            return eventFlagMaps[i].flag;
+            return eventFlagMaps[index].flag;
         }
     }
     return 0;
@@ -481,7 +481,7 @@ int main(int argc, char * * argv)
             continue;
         }
   
-        short flag = strToEventFlag(*argv);
+        short flag = parse_event(*argv);
         if(flag)
         {
             flags |= flag;
