@@ -308,75 +308,6 @@ int parse_nonnegative_int(char const * string, int * destination)
     return 1;
 }
 
-#define OPTION_PARSE_exit_success 0
-#define OPTION_PARSE_exit_failure 1
-#define OPTION_PARSE_continue 2
-int parseOption(char * * * strsPtr, int * timeoutPtr)
-{
-    char * * strs = *strsPtr;
-    char * str = *strs;
- 
-    str += 1;
-    if(!strcmp(str, "-help") || !strcmp(str, "h"))
-    {
-        fputs(helpText, stdout);
-        return OPTION_PARSE_exit_success;
-    }
- 
-    if(!strcmp(str, "-timeout") || !strcmp(str, "t"))
-    {
-        strs += 1;
-        str = *strs;
-        if(!str)
-        {
-            fputs(timeoutMissing, stderr);
-            return OPTION_PARSE_exit_failure;
-        }
-        *strsPtr = strs;
-    }
-    else
-    if(!strncmp(str, "-timeout=", 9))
-    {
-        str += 9;
-    }
-    else
-    if(str[0] == 't')
-    {
-        str += 1;
-    }
-    else
-    {
-        fputs(unrecognizedOption, stderr);
-        fputs(str, stderr);
-        fputc('\n', stderr);
-        return OPTION_PARSE_continue;
-    }
- 
-    int timeout = strToInt(str);
-    if(timeout >= 0)
-    {
-        *timeoutPtr = timeout;
-        return OPTION_PARSE_continue;
-    }
-    else
-    if(timeout == STR_TO_INT_overflow)
-    {
-        fputs(timeoutOverflowedInt, stderr);
-        fputs(str, stderr);
-        fputc('\n', stderr);
-        return OPTION_PARSE_exit_failure;
-    }
-    else
-    if(timeout == STR_TO_INT_invalid)
-    {
-        fputs(timeoutInvalid, stderr);
-        fputs(str, stderr);
-        fputc('\n', stderr);
-        return OPTION_PARSE_exit_failure;
-    }
-    /* should not be reached */
-    return OPTION_PARSE_exit_failure;
-}
 
 const size_t MAX_OUTPUT_LEN = sizeof
 (
@@ -441,20 +372,79 @@ void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
 
 int main(int argc, char * * argv)
 {
-    /* Zeroth argument is the program name itself, skip it. */
+    char * arg;
+    char * arg0 = *argv;
+    char * timeout_arg = 0;
+    int timeout = -1;  /* default timeout is no timeout */
+    int nfds;
+
+    if(argc < 2)
+    {
+        if(!arg0)
+        {
+            arg0 = "";
+        }
+        return error_need_poll(arg0);
+    }
+
     argv += 1;
-    argc -= 1;
+    arg = *argv;
  
+    if(*arg == '-')
+    {
+        arg += 1;
+        if(!strcmp(arg, "-help") || !strcmp(arg, "h"))
+        {
+            return print_help(arg0);
+        }
+        if(!strcmp(arg, "-version") || !strcmp(arg, "V"))
+        {
+            return print_version(arg0);
+        }
+
+        if(!strcmp(arg, "-timeout") || !strcmp(arg, "t"))
+        {
+            argv += 1;
+            arg = *argv;
+            if(!arg)
+            {
+                return error_need_timeout(arg0);
+            }
+            timeout_arg = arg;
+        }
+        else
+        if(!strncmp(arg, "-timeout=", 9))
+        {
+            timeout_arg = arg + 9;
+        }
+        else
+        if(!strncmp(arg, "t", 1))
+        {
+            timeout_arg = arg + 1;
+        }
+        else
+        /* If it is *not* the "end of options" ("--") "option": */
+        if(strcmp(arg, "-"))
+        {
+            return error_bad_option(arg - 1, arg0);
+        }
+
+        argv += 1;
+        arg = *argv;
+
+        if(!arg)
+        {
+            return error_need_poll(arg0);
+        }
+    }
+
+    if(timeout_arg && !parse_nonnegative_int(timeout_arg, &timeout))
+    {
+        return error_bad_timeout(timeout_arg, arg0);
+    }
+
     /* We always poll for at least one FD if we poll at all. */
-    nfds_t nfds;
-    if(argc < 1)
-    {
-        nfds = 1;
-    }
-    else
-    {
-        nfds = argc;
-    }
+    nfds = argc;
  
     /*\
     This overallocates in most cases, but it is normal for calloc
@@ -464,8 +454,7 @@ int main(int argc, char * * argv)
     struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
     if(!fdStrs || !pollSpecs)
     {
-        fputs(unableToMalloc, stderr);
-        return EXIT_EXECUTION_ERROR;
+        return error_allocating_memory(arg0);
     }
  
     /* Now nfds will index into pollSpecs and fdStrs */
@@ -474,17 +463,14 @@ int main(int argc, char * * argv)
     pollSpecs[0].fd = 0;
     fdStrs[0] = "0";
  
-    /* Default timeout is no timeout */
-    int timeout = -1;
- 
     short flags = 0;
     nfds_t fdGroup_i = 0;
  
     char * * argvCopy = argv;
     for(; *argv; argv += 1)
     {
-        int fd = strToInt(*argv);
-        if(fd >= 0)
+        int fd;
+        if(parse_nonnegative_int(*argv, &fd))
         {
             /* If there were flags since the last FD, we need to apply them: */
             if(flags)
@@ -498,24 +484,6 @@ int main(int argc, char * * argv)
             nfds += 1;
             continue;
         }
-        else
-        if(fd == STR_TO_INT_overflow)
-        {
-            fputs(fdOverflowedInt, stderr);
-            fputs(*argv, stderr);
-            fputc('\n', stderr);
-            return EXIT_USAGE_ERROR;
-        }
-  
-        if(*argv[0] == '-')
-        {
-            int optionParseResult = parseOption(&argv, &timeout);
-            if(optionParseResult == OPTION_PARSE_exit_success)
-                return EXIT_POLLED_EVENT_OR_INFO;
-            if(optionParseResult == OPTION_PARSE_exit_failure)
-                return EXIT_USAGE_ERROR;
-            continue;
-        }
   
         short flag = strToEventFlag(*argv);
         if(flag)
@@ -524,10 +492,7 @@ int main(int argc, char * * argv)
             continue;
         }
   
-        fputs(unrecognizedEvent, stderr);
-        fputs(*argv, stderr);
-        fputc('\n', stderr);
-        return EXIT_USAGE_ERROR;
+        return error_bad_argument(*argv, arg0);
     }
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs);
@@ -552,8 +517,7 @@ int main(int argc, char * * argv)
     int result = poll(pollSpecs, nfds, timeout);
     if(result < 0)
     {
-        perror(pollError);
-        return EXIT_EXECUTION_ERROR;
+        return error_polling(arg0);
     }
     if(!result)
     {
