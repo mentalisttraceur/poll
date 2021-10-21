@@ -19,8 +19,8 @@ before any `#include` directive.
 #include <poll.h> /* POLL*, nfds_t, poll, struct pollfd */
 
 
-#define STR_m(text) #text
-#define STR_MACRO_m(macro) STR_m(macro)
+#define STRINGIFY(macro) STRINGIFY_(macro)
+#define STRINGIFY_(text) #text
 
 #define EXIT_ASKED_EVENT_OR_INFO 0
 #define EXIT_UNASKED_EVENT 1
@@ -44,15 +44,15 @@ char const help_text[] =
     "    -t --timeout=<timeout>  upper limit on waiting (in milliseconds)\n"
     "\n"
     "Exits:\n"
-    "    " STR_MACRO_m(EXIT_ASKED_EVENT_OR_INFO)
+    "    " STRINGIFY(EXIT_ASKED_EVENT_OR_INFO)
     "  got at least one event that was asked for\n"
-    "    " STR_MACRO_m(EXIT_UNASKED_EVENT)
+    "    " STRINGIFY(EXIT_UNASKED_EVENT)
     "  got only always-polled events that were not asked for\n"
-    "    " STR_MACRO_m(EXIT_NO_EVENT)
+    "    " STRINGIFY(EXIT_NO_EVENT)
     "  got no events within <timeout> milliseconds\n"
-    "    " STR_MACRO_m(EXIT_USAGE_ERROR)
+    "    " STRINGIFY(EXIT_USAGE_ERROR)
     "  error in how the poll command was called\n"
-    "    " STR_MACRO_m(EXIT_EXECUTION_ERROR)
+    "    " STRINGIFY(EXIT_EXECUTION_ERROR)
     "  error when trying to carry out the poll command\n"
     "\n"
     "Normal events:\n"
@@ -311,7 +311,7 @@ int parse_nonnegative_int(char const * string, int * destination)
 
 const size_t MAX_OUTPUT_LEN = sizeof
 (
-    STR_MACRO_m(INT_MAX) " IN OUT PRI ERR HUP NVAL\n"
+    STRINGIFY(INT_MAX) " IN OUT PRI ERR HUP NVAL\n"
 #ifdef POLLRDNORM
     " RDNORM"
 #endif
