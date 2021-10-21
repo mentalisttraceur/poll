@@ -22,8 +22,8 @@ before any `#include` directive.
 #define STR_m(text) #text
 #define STR_MACRO_m(macro) STR_m(macro)
 
-#define EXIT_POLLED_EVENT_OR_INFO 0
-#define EXIT_UNPOLLED_EVENT 1
+#define EXIT_ASKED_EVENT_OR_INFO 0
+#define EXIT_UNASKED_EVENT 1
 #define EXIT_NO_EVENT 2
 #define EXIT_USAGE_ERROR 3
 #define EXIT_EXECUTION_ERROR 4
@@ -52,9 +52,9 @@ char const helpText[] =
     "    -t --timeout=<timeout>  upper limit on waiting (in milliseconds)\n"
     "\n"
     "Exits:\n"
-    "    " STR_MACRO_m(EXIT_POLLED_EVENT_OR_INFO)
+    "    " STR_MACRO_m(EXIT_ASKED_EVENT_OR_INFO)
     "  got only events that were asked for\n"
-    "    " STR_MACRO_m(EXIT_UNPOLLED_EVENT)
+    "    " STR_MACRO_m(EXIT_UNASKED_EVENT)
     "  got at least one always-polled event that was not asked for\n"
     "    " STR_MACRO_m(EXIT_NO_EVENT)
     "  got no events within <timeout> milliseconds\n"
@@ -449,7 +449,7 @@ int main(int argc, char * * argv)
     {
         return EXIT_NO_EVENT;
     }
-    int exitcode = EXIT_UNPOLLED_EVENT;
+    int exitcode = EXIT_UNASKED_EVENT;
     for(fdGroup_i = 0; fdGroup_i < nfds && result; fdGroup_i += 1)
     {
         if(pollSpecs[fdGroup_i].revents)
@@ -457,7 +457,7 @@ int main(int argc, char * * argv)
             printEventFlags(pollSpecs[fdGroup_i].revents, fdStrs[fdGroup_i]);
             if(pollSpecs[fdGroup_i].revents & pollSpecs[fdGroup_i].events)
             {
-                exitcode = EXIT_POLLED_EVENT_OR_INFO;
+                exitcode = EXIT_ASKED_EVENT_OR_INFO;
             }
             result -= 1;
         }
