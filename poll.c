@@ -12,7 +12,7 @@ before any `#include` directive.
 #include <limits.h> /* INT_MAX */
 
 #include <errno.h> /* errno */
-#include <stdio.h> /* fputc, fputs, perror, stderr, stdout */
+#include <stdio.h> /* EOF, fputc, fputs, perror, stderr, stdout */
 #include <stdlib.h> /* calloc */
 #include <string.h> /* strlen, strcmp, strncmp */
 #include <poll.h> /* all poll-related definitions */
