@@ -28,18 +28,10 @@ before any `#include` directive.
 #define EXIT_USAGE_ERROR 3
 #define EXIT_EXECUTION_ERROR 4
 
-char const unrecognizedOption[] = "poll: Unrecognized option: ";
-char const unrecognizedEvent[] = "poll: Unrecognized event: ";
-char const fdOverflowedInt[]
-= "poll: FD value greater than maximum possible: ";
-char const timeoutOverflowedInt[]
-= "poll: timeout value greater than maximum possible: ";
-char const timeoutMissing[] = "poll: timeout option requires an argument\n";
-char const timeoutInvalid[] = "poll: invalid timeout value: ";
-char const unableToMalloc[] = "poll: unable to allocate memory\n";
-char const pollError[] = "poll: error polling: ";
 
-char const helpText[] =
+char const version_text[] = "poll 1.0.0";
+
+char const help_text[] =
     "Wait until at least one event happens on at least one file descriptor.\n"
     "\n"
     "Usage:\n"
@@ -134,6 +126,131 @@ inclusion in command-line */
 /* Please feel free to inform me or submit patches for other additional poll
 flags on other systems. */
 };
+
+
+static
+int error_need_poll(char * arg0)
+{
+    if(fputs(arg0, stderr) != EOF)
+    {
+        fputs(": need file descriptor or event argument", stderr);
+    }
+    return EXIT_USAGE_ERROR;
+}
+
+
+static
+int error_need_timeout(char * arg0)
+{
+    if(fputs(arg0, stderr) != EOF)
+    {
+        fputs(": need timeout argument", stderr);
+    }
+    return EXIT_USAGE_ERROR;
+}
+
+
+static
+int error_bad_option(char * option, char * arg0)
+{
+    if(fputs(arg0, stderr) != EOF
+    && fputs(": bad option: ", stderr) != EOF
+    && fputs(option, stderr) != EOF)
+    {
+        fputc('\n', stderr);
+    }
+    return EXIT_USAGE_ERROR;
+}
+
+
+static
+int error_bad_timeout(char * timeout, char * arg0)
+{
+    if(fputs(arg0, stderr) != EOF
+    && fputs(": bad timeout: ", stderr) != EOF
+    && fputs(timeout, stderr) != EOF)
+    {
+        fputc('\n', stderr);
+    }
+    return EXIT_USAGE_ERROR;
+}
+
+
+static
+int error_bad_argument(char * argument, char * arg0)
+{
+    if(fputs(arg0, stderr) != EOF
+    && fputs(": bad argument: ", stderr) != EOF
+    && fputs(argument, stderr) != EOF)
+    {
+        fputc('\n', stderr);
+    }
+    return EXIT_USAGE_ERROR;
+}
+
+
+static
+int error_writing_output(char * arg0)
+{
+    int errno_ = errno;
+    if(fputs(arg0, stderr) != EOF)
+    {
+        errno = errno_;
+        perror(": error writing output");
+    }
+    return EXIT_EXECUTION_ERROR;
+}
+
+
+static
+int error_allocating_memory(char * arg0)
+{
+    int errno_ = errno;
+    if(fputs(arg0, stderr) != EOF)
+    {
+        errno = errno_;
+        perror(": error allocating memory");
+    }
+    return EXIT_EXECUTION_ERROR;
+}
+
+
+static
+int error_polling(char * arg0)
+{
+    int errno_ = errno;
+    if(fputs(arg0, stderr) != EOF)
+    {
+        errno = errno_;
+        perror(": error polling");
+    }
+    return EXIT_EXECUTION_ERROR;
+}
+
+
+static
+int print_help(char * arg0)
+{
+    if(fputs(help_text, stdout) != EOF
+    && fflush(stdout) ! EOF)
+    {
+        return EXIT_ASKED_EVENT_OR_INFO;
+    }
+    return error_writing_output(arg0);
+}
+
+
+static
+int print_version(char * arg0)
+{
+    if(fputs(version_text, stdout) != EOF
+    && fflush(stdout) ! EOF)
+    {
+        return EXIT_ASKED_EVENT_OR_INFO;
+    }
+    return error_writing_output(arg0);
+}
+
 
 int strIsEventFlagName(char const * str, char const * eventFlagName)
 {
