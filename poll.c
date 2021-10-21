@@ -7,13 +7,15 @@ define a processor macro such as `_XOPEN_SOURCE` or `_GNU_SOURCE`
 before any `#include` directive.
 \*/
 
-#include <stddef.h> /* size_t */
-#include <limits.h> /* INT_MAX */
-
+/* Standard C library headers */
 #include <errno.h> /* errno */
+#include <limits.h> /* INT_MAX */
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* EOF, fputc, fputs, perror, stderr, stdout */
 #include <stdlib.h> /* calloc */
 #include <string.h> /* strlen, strcmp, strncmp */
+
+/* Standard UNIX/Linux (POSIX/SUS base) headers */
 #include <poll.h> /* all poll-related definitions */
 
 #define STR_m(text) #text
