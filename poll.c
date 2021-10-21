@@ -170,32 +170,25 @@ short strToEventFlag(char const * str)
     return 0;
 }
 
-#define STR_TO_INT_overflow -1
-#define STR_TO_INT_invalid -2
-int strToInt(char const * str)
+static
+int parse_nonnegative_int(char const * string, int * destination)
 {
-    int val = 0;
-    for(int c; c = *str; str += 1)
+    int character, digit, value = 0;
+    while((character = *string++))
     {
-        if(c < '0' || c > '9')
+        if(character < '0' || character > '9')
         {
-            val = STR_TO_INT_invalid;
-            break;
+            return 0;
         }
-        if(val <= INT_MAX / 10)
+        digit = character - '0';
+        if(value > (INT_MAX - digit) / 10)
         {
-            val *= 10;
-            c -= '0';
-            if(val <= INT_MAX - c)
-            {
-                val += c;
-                continue;
-            }
+            return 0;
         }
-        val = STR_TO_INT_overflow;
-        break;
+        value = (value * 10) + digit;
     }
-    return val;
+    *destination = value;
+    return 1;
 }
 
 #define OPTION_PARSE_exit_success 0
