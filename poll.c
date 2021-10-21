@@ -9,6 +9,7 @@ before any `#include` directive.
 
 /* Standard C library headers */
 #include <errno.h> /* errno */
+#include <ctype.h> /* toupper */
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* EOF, fputc, fputs, perror, stderr, stdout */
@@ -256,16 +257,12 @@ int strIsEventFlagName(char const * str, char const * eventFlagName)
 {
     for
     (
-        char str_c, eventFlagName_c;
+        unsigned char str_c, eventFlagName_c;
         (str_c = *str) && (eventFlagName_c = *eventFlagName);
         str += 1, eventFlagName += 1
     )
     {
-        if(str_c >= 'a' && str_c <= 'z')
-        {
-            str_c -= 32;
-        }
-        if(str_c != eventFlagName_c)
+        if(toupper(str_c) != eventFlagName_c)
         {
             return 0;
         }
