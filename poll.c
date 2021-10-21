@@ -8,7 +8,6 @@ before any `#include` directive.
 \*/
 
 #include <stddef.h> /* size_t */
-#include <stdbool.h> /* bool */
 #include <limits.h> /* INT_MAX */
 
 #include <errno.h> /* errno */
@@ -133,7 +132,7 @@ inclusion in command-line */
 flags on other systems. */
 };
 
-bool strIsEventFlagName(char const * str, char const * eventFlagName)
+int strIsEventFlagName(char const * str, char const * eventFlagName)
 {
     for
     (
