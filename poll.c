@@ -90,7 +90,7 @@ char const helpText[] =
 typedef struct
 {
     short const flag;
-    char const * const restrict name;
+    char const * const name;
 }
 eventFlagMap_st;
 
@@ -133,8 +133,7 @@ inclusion in command-line */
 flags on other systems. */
 };
 
-bool strIsEventFlagName
-(char const * restrict str, char const * restrict eventFlagName)
+bool strIsEventFlagName(char const * str, char const * eventFlagName)
 {
     for
     (
