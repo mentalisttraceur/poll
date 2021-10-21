@@ -457,8 +457,8 @@ int main(int argc, char * * argv)
     }
  
     /*\
-    This "overallocates" a few slots in most cases, but on most platforms, calloc
-    will overallocate much more internally (one memory page or more) either way.
+    This overallocates in most cases, but it is normal for calloc
+    to overallocate much more internally (one memory page or more).
     \*/
     char * * fdStrs = calloc(nfds, sizeof(char *));
     struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
