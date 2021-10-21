@@ -53,9 +53,9 @@ char const helpText[] =
     "\n"
     "Exits:\n"
     "    " STR_MACRO_m(EXIT_ASKED_EVENT_OR_INFO)
-    "  got only events that were asked for\n"
+    "  got at least one event that was asked for\n"
     "    " STR_MACRO_m(EXIT_UNASKED_EVENT)
-    "  got at least one always-polled event that was not asked for\n"
+    "  got only always-polled events that were not asked for\n"
     "    " STR_MACRO_m(EXIT_NO_EVENT)
     "  got no events within <timeout> milliseconds\n"
     "    " STR_MACRO_m(EXIT_USAGE_ERROR)
