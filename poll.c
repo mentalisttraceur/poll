@@ -353,10 +353,10 @@ void printEventFlags(short flags, char * fdStr)
 
 static
 void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
-                         struct pollfd * pollSpecs)
+                         struct pollfd * polls)
 {
     /*\
-    If no prior FD arguments, increment nfds to use the default pollSpec as this
+    If no prior FD arguments, increment nfds to use the default poll as this
     FD group:
     \*/
     if(!*nfds)
@@ -366,7 +366,7 @@ void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
     /* Apply flags to FD group: */
     for(; *fdGroup_i < *nfds; *fdGroup_i += 1)
     {
-        pollSpecs[*fdGroup_i].events = flags;
+        polls[*fdGroup_i].events = flags;
     }
 }
 
@@ -450,18 +450,18 @@ int main(int argc, char * * argv)
     This overallocates in most cases, but it is normal for calloc
     to overallocate much more internally (one memory page or more).
     \*/
-    char * * fdStrs = calloc(nfds, sizeof(char *));
-    struct pollfd * pollSpecs = calloc(nfds, sizeof(struct pollfd));
-    if(!fdStrs || !pollSpecs)
+    char * * fds = calloc(nfds, sizeof(char *));
+    struct pollfd * polls = calloc(nfds, sizeof(struct pollfd));
+    if(!fds || !polls)
     {
         return error_allocating_memory(arg0);
     }
  
-    /* Now nfds will index into pollSpecs and fdStrs */
+    /* Now nfds will index into polls and fds */
     nfds = 0;
 
-    pollSpecs[0].fd = 0;
-    fdStrs[0] = "0";
+    polls[0].fd = 0;
+    fds[0] = "0";
  
     short flags = 0;
     nfds_t fdGroup_i = 0;
@@ -475,12 +475,12 @@ int main(int argc, char * * argv)
             /* If there were flags since the last FD, we need to apply them: */
             if(flags)
             {
-                applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs);
+                applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
                 /* Reset flags for next group. */
                 flags = 0;
             }
-            pollSpecs[nfds].fd = fd;
-            fdStrs[nfds] = *argv;
+            polls[nfds].fd = fd;
+            fds[nfds] = *argv;
             nfds += 1;
             continue;
         }
@@ -495,26 +495,26 @@ int main(int argc, char * * argv)
         return error_bad_argument(*argv, arg0);
     }
     /* Need to apply flags to last FD group: */
-    applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, pollSpecs);
+    applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
  
     /* Merge multiple entries for the same file descriptor. */
     for(fdGroup_i = 0; fdGroup_i < (nfds - 1); fdGroup_i += 1)
     {
         for(nfds_t i = fdGroup_i + 1; i < nfds; i += 1)
         {
-            if(pollSpecs[i].fd == pollSpecs[fdGroup_i].fd)
+            if(polls[i].fd == polls[fdGroup_i].fd)
             {
-                pollSpecs[fdGroup_i].events |= pollSpecs[i].events;
+                polls[fdGroup_i].events |= polls[i].events;
                 /* Fill up the now-unused hole in poll specification array: */
                 nfds -= 1;
-                pollSpecs[i] = pollSpecs[nfds];
-                fdStrs[i] = fdStrs[nfds];
+                polls[i] = polls[nfds];
+                fds[i] = fds[nfds];
                 i -= 1;
             }
         }
     }
  
-    int result = poll(pollSpecs, nfds, timeout);
+    int result = poll(polls, nfds, timeout);
     if(result < 0)
     {
         return error_polling(arg0);
@@ -526,10 +526,10 @@ int main(int argc, char * * argv)
     int exitcode = EXIT_UNASKED_EVENT;
     for(fdGroup_i = 0; fdGroup_i < nfds && result; fdGroup_i += 1)
     {
-        if(pollSpecs[fdGroup_i].revents)
+        if(polls[fdGroup_i].revents)
         {
-            printEventFlags(pollSpecs[fdGroup_i].revents, fdStrs[fdGroup_i]);
-            if(pollSpecs[fdGroup_i].revents & pollSpecs[fdGroup_i].events)
+            printEventFlags(polls[fdGroup_i].revents, fds[fdGroup_i]);
+            if(polls[fdGroup_i].revents & polls[fdGroup_i].events)
             {
                 exitcode = EXIT_ASKED_EVENT_OR_INFO;
             }
