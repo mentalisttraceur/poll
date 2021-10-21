@@ -16,7 +16,8 @@ before any `#include` directive.
 #include <string.h> /* strlen, strcmp, strncmp */
 
 /* Standard UNIX/Linux (POSIX/SUS base) headers */
-#include <poll.h> /* all poll-related definitions */
+#include <poll.h> /* POLL*, nfds_t, poll, struct pollfd */
+
 
 #define STR_m(text) #text
 #define STR_MACRO_m(macro) STR_m(macro)
