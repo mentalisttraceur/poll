@@ -8,8 +8,8 @@ before any `#include` directive.
 \*/
 
 /* Standard C library headers */
-#include <errno.h> /* errno */
 #include <ctype.h> /* toupper */
+#include <errno.h> /* errno */
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* EOF, fputc, fputs, perror, stderr, stdout */
