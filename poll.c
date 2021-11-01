@@ -315,13 +315,13 @@ int print_nonnegative_int(int value)
     char buffer[sizeof(STRINGIFY(INT_MAX))];
     char * string = buffer + sizeof(buffer);
     *--string = '\0';
-    *--string = '0';
-    while(value)
+    do
     {
         int digit = value % 10;
         value /= 10;
-        *string-- = digit + '0';
+        *--string = digit + '0';
     }
+    while(value);
     return fputs(string, stdout);
 }
 
