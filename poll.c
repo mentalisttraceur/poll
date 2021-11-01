@@ -309,6 +309,23 @@ int parse_nonnegative_int(char const * string, int * destination)
 }
 
 
+static
+int print_nonnegative_int(int value)
+{
+    char buffer[sizeof(STRINGIFY(INT_MAX))];
+    char * string = buffer + sizeof(buffer);
+    *--string = '\0';
+    *--string = '0';
+    while(value)
+    {
+        int digit = value % 10;
+        value /= 10;
+        *string-- = digit + '0';
+    }
+    return fputs(string, stdout);
+}
+
+
 int printEventFlags(short flags, char * fdStr)
 {
     if(fputs(fdStr, stdout) == EOF)
