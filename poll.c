@@ -273,8 +273,8 @@ static
 short parse_event(char const * string)
 {
     static struct event const * const end = events + sizeof(events);
-    struct event const * event;
-    for(event = events; event < end; event += 1)
+    struct event const * event = events;
+    while(event++ < end)
     {
         if(match_event_name(string, event->name))
         {
