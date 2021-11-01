@@ -255,27 +255,13 @@ int print_version(char * arg0)
 
 
 static
-int match_event_name(char const * string, char const * name)
-{
-    while(*name)
-    {
-        if(toupper(*string++) != (unsigned char )*name++)
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
-static
 short parse_event(char const * string)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
     for(; event < end; event += 1)
     {
-        if(match_event_name(string, event->name))
+        if(!strcmp(string, event->name))
         {
             return event->flag;
         }
