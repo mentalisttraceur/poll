@@ -373,7 +373,7 @@ int main(int argc, char * * argv)
     char * arg0 = *argv;
     char * timeout_arg = 0;
     int timeout = -1;  /* default timeout is no timeout */
-    int nfds;
+    nfds_t nfds;
 
     if(argc < 2)
     {
