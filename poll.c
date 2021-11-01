@@ -303,7 +303,7 @@ int parse_nonnegative_int(char const * string, int * destination)
         }
         value = (value * 10) + digit;
     }
-    while(character);
+    while(*string++);
     *destination = value;
     return 1;
 }
