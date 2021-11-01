@@ -82,16 +82,15 @@ char const help_text[] =
     "    ERR HUP NVAL\n"
 ;
 
-typedef struct
+struct event
 {
     short const flag;
     char const * const name;
-}
-eventFlagMap_st;
+};
 
 #define EVENT(name) { POLL ## name, # name }
 
-eventFlagMap_st const eventFlagMaps[] =
+struct event const events[] =
 {
     EVENT(IN),
     EVENT(OUT),
@@ -268,7 +267,7 @@ int match_event_name(char const * string, char const * name)
 }
 
 
-#define EVENT_FLAG_COUNT (sizeof(eventFlagMaps) / sizeof(eventFlagMap_st))
+#define EVENT_FLAG_COUNT (sizeof(eventFlagMaps) / sizeof(struct event))
 
 static
 short parse_event(char const * string)
