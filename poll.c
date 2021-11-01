@@ -283,6 +283,7 @@ short parse_event(char const * string)
     return 0;
 }
 
+
 static
 int parse_nonnegative_int(char const * string, int * destination)
 {
