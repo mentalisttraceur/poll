@@ -493,7 +493,8 @@ int main(int argc, char * * argv)
     /* Merge multiple entries for the same file descriptor. */
     for(fdGroup_i = 0; fdGroup_i < (nfds - 1); fdGroup_i += 1)
     {
-        for(nfds_t i = fdGroup_i + 1; i < nfds; i += 1)
+        nfds_t i;
+        for(i = fdGroup_i + 1; i < nfds; i += 1)
         {
             if(polls[i].fd == polls[fdGroup_i].fd)
             {
