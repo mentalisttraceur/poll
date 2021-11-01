@@ -127,6 +127,8 @@ inclusion in command-line */
 flags on other systems. */
 };
 
+static const size_t event_count = sizeof(events) / sizeof(struct event);
+
 
 static
 int error_need_poll(char * arg0)
@@ -269,7 +271,7 @@ int match_event_name(char const * string, char const * name)
 static
 short parse_event(char const * string)
 {
-    static struct event const * const end = events + sizeof(events);
+    static struct event const * const end = events + event_count;
     struct event const * event = events;
     while(event++ < end)
     {
@@ -327,7 +329,7 @@ int print_nonnegative_int(int value)
 static
 int print_events_for_fd(int fd, short flags)
 {
-    static struct event const * const end = events + sizeof(events);
+    static struct event const * const end = events + event_count;
     struct event const * event = events;
     if(print_nonnegative_int(fd) == EOF)
     {
