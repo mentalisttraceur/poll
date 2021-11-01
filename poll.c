@@ -346,6 +346,7 @@ int printEventFlags(short flags, char * fdStr)
     return fputc('\n', stdout);
 }
 
+
 static
 void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
                          struct pollfd * polls)
