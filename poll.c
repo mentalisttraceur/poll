@@ -525,7 +525,7 @@ int main(int argc, char * * argv)
         {
             if(printEventFlags(polls->revents, *fds) == EOF)
             {
-                return error_printing_output(arg0);
+                return error_writing_output(arg0);
             }
             if(polls->revents & polls->events)
             {
