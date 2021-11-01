@@ -255,10 +255,9 @@ int print_version(char * arg0)
 static
 int match_event_name(char const * string, char const * name)
 {
-    unsigned char string_character, name_character;
-    while((string_character = *string++) && (name_character = *name++))
+    while(*name)
     {
-        if(toupper(string_character) != name_character)
+        if(toupper(*string++) != (unsigned char )*name++)
         {
             return 0;
         }
