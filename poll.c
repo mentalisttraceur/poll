@@ -273,7 +273,7 @@ short parse_event(char const * string)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
-    while(event++ < end)
+    for(; event < end; event += 1)
     {
         if(match_event_name(string, event->name))
         {
@@ -335,7 +335,7 @@ int print_events_for_fd(int fd, short flags)
     {
         return EOF;
     }
-    while(event++ < end)
+    for(; event < end; event += 1)
     {
         if(event->flag & flags)
         {
