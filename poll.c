@@ -309,46 +309,18 @@ int parse_nonnegative_int(char const * string, int * destination)
 }
 
 
-const size_t MAX_OUTPUT_LEN = sizeof
-(
-    STRINGIFY(INT_MAX) " IN OUT PRI ERR HUP NVAL\n"
-#ifdef POLLRDNORM
-    " RDNORM"
-#endif
-#ifdef POLLRDBAND
-    " RDBAND"
-#endif
-#ifdef POLLWRNORM
-    " WRNORM"
-#endif
-#ifdef POLLWRBAND
-    " WRBAND"
-#endif
-#ifdef POLLMSG
-    " MSG"
-#endif
-#ifdef POLLRDHUP
-    " RDHUP"
-#endif
-);
-
 void printEventFlags(short flags, char * fdStr)
 {
-    char outputBuffer[MAX_OUTPUT_LEN];
-    char * outputBufferPtr = outputBuffer + strlen(fdStr);
-    strcpy(outputBuffer, fdStr);
+    fputs(fdStr, stdout);
     for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
     {
         if(eventFlagMaps[i].flag & flags)
         {
-            *outputBufferPtr = ' ';
-            outputBufferPtr += 1;
-            strcpy(outputBufferPtr, eventFlagMaps[i].name);
-            outputBufferPtr += strlen(eventFlagMaps[i].name);
+            fputc(' ', stdout);
+            fputs(eventFlagMaps[i].name, stdout);
         }
     }
-    *outputBufferPtr = '\n';
-    fputs(outputBuffer, stdout);
+    fputc('\n', stdout);
 }
 
 static
