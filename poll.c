@@ -89,41 +89,41 @@ typedef struct
 }
 eventFlagMap_st;
 
-#define eventFlagMap_m(name) { POLL ## name, # name }
+#define EVENT(name) { POLL ## name, # name }
 
 eventFlagMap_st const eventFlagMaps[] =
 {
-    eventFlagMap_m(IN),
-    eventFlagMap_m(OUT),
-    eventFlagMap_m(PRI),
+    EVENT(IN),
+    EVENT(OUT),
+    EVENT(PRI),
 /* These flags used to be in a POSIX extention: sometimes undefined. */
 #ifdef POLLRDNORM
-    eventFlagMap_m(RDNORM),
+    EVENT(RDNORM),
 #endif
 #ifdef POLLRDBAND
-    eventFlagMap_m(RDBAND),
+    EVENT(RDBAND),
 #endif
 #ifdef POLLWRNORM
-    eventFlagMap_m(WRNORM),
+    EVENT(WRNORM),
 #endif
 #ifdef POLLWRBAND
-    eventFlagMap_m(WRBAND),
+    EVENT(WRBAND),
 #endif
 /* These flags seem to be Linux/GNU -specific: typically undefined. */
 #ifdef POLLMSG
-    eventFlagMap_m(MSG),
+    EVENT(MSG),
 #endif
 #ifdef POLLRDHUP
-    eventFlagMap_m(RDHUP),
+    EVENT(RDHUP),
 #endif
 /* Please let me know of additional poll flags on other systems */
 /* result-only flags go at the bottom, so that command-line arguments are
 checked against them last - they are ignored in the "events" field on all
 systems as far as I know, so this code allows them to be set when polling by
 inclusion in command-line */
-    eventFlagMap_m(ERR),
-    eventFlagMap_m(HUP),
-    eventFlagMap_m(NVAL)
+    EVENT(ERR),
+    EVENT(HUP),
+    EVENT(NVAL)
 /* Please feel free to inform me or submit patches for other additional poll
 flags on other systems. */
 };
