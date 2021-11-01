@@ -30,7 +30,7 @@ before any `#include` directive.
 #define EXIT_EXECUTION_ERROR 4
 
 
-char const version_text[] = "poll 1.0.0";
+char const version_text[] = "poll 1.0.0\n";
 
 char const help_text[] =
     "Wait until at least one event happens on at least one file descriptor.\n"
