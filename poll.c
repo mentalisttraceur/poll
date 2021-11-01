@@ -309,18 +309,24 @@ int parse_nonnegative_int(char const * string, int * destination)
 }
 
 
-void printEventFlags(short flags, char * fdStr)
+int printEventFlags(short flags, char * fdStr)
 {
-    fputs(fdStr, stdout);
+    if(fputs(fdStr, stdout) == EOF)
+    {
+        return EOF;
+    }
     for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
     {
         if(eventFlagMaps[i].flag & flags)
         {
-            fputc(' ', stdout);
-            fputs(eventFlagMaps[i].name, stdout);
+            if(fputc(' ', stdout) == EOF
+            || fputs(eventFlagMaps[i].name, stdout) == EOF)
+            {
+                return EOF;
+            }
         }
     }
-    fputc('\n', stdout);
+    return fputc('\n', stdout);
 }
 
 static
@@ -499,7 +505,10 @@ int main(int argc, char * * argv)
     {
         if(polls[fdGroup_i].revents)
         {
-            printEventFlags(polls[fdGroup_i].revents, fds[fdGroup_i]);
+            if(printEventFlags(polls[fdGroup_i].revents, fds[fdGroup_i]) == EOF)
+            {
+                return error_printing_output(arg0);
+            }
             if(polls[fdGroup_i].revents & polls[fdGroup_i].events)
             {
                 exitcode = EXIT_ASKED_EVENT_OR_INFO;
