@@ -324,11 +324,12 @@ int print_nonnegative_int(int value)
 }
 
 
-int printEventFlags(short flags, char * fdStr)
+static
+int print_events_for_fd(int fd, short flags)
 {
     static struct event const * const end = events + sizeof(events);
     struct event const * event = events;
-    if(fputs(fdStr, stdout) == EOF)
+    if(print_nonnegative_int(fd) == EOF)
     {
         return EOF;
     }
@@ -446,9 +447,8 @@ int main(int argc, char * * argv)
     This overallocates in most cases, but it is normal for calloc
     to overallocate much more internally (one memory page or more).
     \*/
-    char * * fds = calloc(nfds, sizeof(char *));
     struct pollfd * polls = calloc(nfds, sizeof(struct pollfd));
-    if(!fds || !polls)
+    if(!polls)
     {
         return error_allocating_memory(arg0);
     }
@@ -457,7 +457,6 @@ int main(int argc, char * * argv)
     nfds = 0;
 
     polls[0].fd = 0;
-    fds[0] = "0";
  
     short flags = 0;
     nfds_t fdGroup_i = 0;
@@ -475,7 +474,6 @@ int main(int argc, char * * argv)
                 flags = 0;
             }
             polls[nfds].fd = fd;
-            fds[nfds] = *argv;
             nfds += 1;
             continue;
         }
@@ -503,7 +501,6 @@ int main(int argc, char * * argv)
                 /* Fill up the now-unused hole in poll specification array: */
                 nfds -= 1;
                 polls[i] = polls[nfds];
-                fds[i] = fds[nfds];
                 i -= 1;
             }
         }
@@ -519,11 +516,11 @@ int main(int argc, char * * argv)
         return EXIT_NO_EVENT;
     }
     int exitcode = EXIT_UNASKED_EVENT;
-    for(; result; polls += 1, fds += 1)
+    for(; result; polls += 1)
     {
         if(polls->revents)
         {
-            if(printEventFlags(polls->revents, *fds) == EOF)
+            if(print_events_for_fd(polls->fd, polls->revents) == EOF)
             {
                 return error_writing_output(arg0);
             }
