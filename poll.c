@@ -286,12 +286,11 @@ short parse_event(char const * string)
 static
 int parse_nonnegative_int(char const * string, int * destination)
 {
-    unsigned int character;
     int value = 0;
     do
     {
         int digit;
-        character = *string;
+        unsigned int character = *string;
         if(character < '0' || character > '9')
         {
             return 0;
