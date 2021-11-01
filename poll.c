@@ -286,10 +286,10 @@ static
 int parse_nonnegative_int(char const * string, int * destination)
 {
     int value = 0;
+    unsigned int character = *string;
     do
     {
         int digit;
-        unsigned int character = *string;
         if(character < '0' || character > '9')
         {
             return 0;
@@ -301,7 +301,7 @@ int parse_nonnegative_int(char const * string, int * destination)
         }
         value = (value * 10) + digit;
     }
-    while(*++string);
+    while((character = *++string));
     *destination = value;
     return 1;
 }
