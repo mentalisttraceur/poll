@@ -133,7 +133,7 @@ int error_need_poll(char * arg0)
 {
     if(fputs(arg0, stderr) != EOF)
     {
-        fputs(": need file descriptor or event argument", stderr);
+        fputs(": need file descriptor or event argument\n", stderr);
     }
     return EXIT_USAGE_ERROR;
 }
@@ -144,7 +144,7 @@ int error_need_timeout(char * arg0)
 {
     if(fputs(arg0, stderr) != EOF)
     {
-        fputs(": need timeout argument", stderr);
+        fputs(": need timeout argument\n", stderr);
     }
     return EXIT_USAGE_ERROR;
 }
