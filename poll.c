@@ -267,8 +267,6 @@ int match_event_name(char const * string, char const * name)
 }
 
 
-#define EVENT_FLAG_COUNT (sizeof(eventFlagMaps) / sizeof(struct event))
-
 static
 short parse_event(char const * string)
 {
@@ -328,16 +326,18 @@ int print_nonnegative_int(int value)
 
 int printEventFlags(short flags, char * fdStr)
 {
+    static struct event const * const end = events + sizeof(events);
+    struct event const * event = events;
     if(fputs(fdStr, stdout) == EOF)
     {
         return EOF;
     }
-    for(size_t i = 0; i < EVENT_FLAG_COUNT; i += 1)
+    while(event++ < end)
     {
-        if(eventFlagMaps[i].flag & flags)
+        if(event->flag & flags)
         {
             if(fputc(' ', stdout) == EOF
-            || fputs(eventFlagMaps[i].name, stdout) == EOF)
+            || fputs(event->name, stdout) == EOF)
             {
                 return EOF;
             }
