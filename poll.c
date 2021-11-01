@@ -272,12 +272,13 @@ int match_event_name(char const * string, char const * name)
 static
 short parse_event(char const * string)
 {
-    size_t index;
-    for(index = 0; index < EVENT_FLAG_COUNT; index += 1)
+    static struct event const * const end = events + sizeof(events);
+    struct event const * event;
+    for(event = events; event < end; event += 1)
     {
-        if(match_event_name(string, eventFlagMaps[index].name))
+        if(match_event_name(string, event->name))
         {
-            return eventFlagMaps[index].flag;
+            return event->flag;
         }
     }
     return 0;
