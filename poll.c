@@ -286,7 +286,7 @@ short parse_event(char const * string)
 static
 int parse_nonnegative_int(char const * string, int * destination)
 {
-    int character;
+    unsigned int character;
     int value = 0;
     do
     {
