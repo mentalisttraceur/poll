@@ -519,15 +519,15 @@ int main(int argc, char * * argv)
         return EXIT_NO_EVENT;
     }
     int exitcode = EXIT_UNASKED_EVENT;
-    for(fdGroup_i = 0; fdGroup_i < nfds && result; fdGroup_i += 1)
+    for(; result; polls += 1, fds += 1)
     {
-        if(polls[fdGroup_i].revents)
+        if(polls->revents)
         {
-            if(printEventFlags(polls[fdGroup_i].revents, fds[fdGroup_i]) == EOF)
+            if(printEventFlags(polls->revents, *fds) == EOF)
             {
                 return error_printing_output(arg0);
             }
-            if(polls[fdGroup_i].revents & polls[fdGroup_i].events)
+            if(polls->revents & polls->events)
             {
                 exitcode = EXIT_ASKED_EVENT_OR_INFO;
             }
