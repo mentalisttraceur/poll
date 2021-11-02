@@ -350,6 +350,37 @@ void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
     }
 }
 
+
+static
+nfds_t merge_polls(struct pollfd * polls, nfds_t count)
+{
+    struct pollfd const * end = polls + count;
+    struct pollfd const * last = end - 1;
+    for(; polls < last; polls += 1)
+    {
+        struct pollfd * rest = polls + 1;
+        while(rest < end)
+        {
+            if(rest->fd == polls->fd)
+            {
+                polls->events |= rest->events;
+                /* Fill up the now-unused hole in the array */
+                /* by pulling the end of the array into it: */
+                *rest = *last;
+                end -= 1;
+                last -= 1;
+                count -= 1;
+            }
+            else
+            {
+                rest += 1;
+            }
+        }
+    }
+    return count;
+}
+
+
 int main(int argc, char * * argv)
 {
     char * arg;
@@ -473,23 +504,8 @@ int main(int argc, char * * argv)
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
  
-    /* Merge multiple entries for the same file descriptor. */
-    for(fdGroup_i = 0; fdGroup_i < (nfds - 1); fdGroup_i += 1)
-    {
-        nfds_t i;
-        for(i = fdGroup_i + 1; i < nfds; i += 1)
-        {
-            if(polls[i].fd == polls[fdGroup_i].fd)
-            {
-                polls[fdGroup_i].events |= polls[i].events;
-                /* Fill up the now-unused hole in poll specification array: */
-                nfds -= 1;
-                polls[i] = polls[nfds];
-                i -= 1;
-            }
-        }
-    }
- 
+    nfds = merge_polls(polls, nfds);
+
     int result = poll(polls, nfds, timeout);
     if(result < 0)
     {
