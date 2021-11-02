@@ -115,7 +115,6 @@ struct event const events[] =
 #ifdef POLLRDHUP
     EVENT(RDHUP),
 #endif
-/* Please let me know of additional poll flags on other systems */
 /* result-only flags go at the bottom, so that command-line arguments are
 checked against them last - they are ignored in the "events" field on all
 systems as far as I know, so this code allows them to be set when polling by
@@ -123,8 +122,6 @@ inclusion in command-line */
     EVENT(ERR),
     EVENT(HUP),
     EVENT(NVAL)
-/* Please feel free to inform me or submit patches for other additional poll
-flags on other systems. */
 };
 
 static const size_t event_count = sizeof(events) / sizeof(struct event);
