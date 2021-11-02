@@ -12,7 +12,7 @@ before any `#include` directive.
 #include <errno.h> /* errno */
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* size_t */
-#include <stdio.h> /* EOF, fputc, fputs, perror, stderr, stdout */
+#include <stdio.h> /* EOF, FILE, fputc, fputs, perror, stderr, stdout */
 #include <stdlib.h> /* calloc */
 #include <string.h> /* strlen, strcmp, strncmp */
 
@@ -291,7 +291,7 @@ int parse_nonnegative_int(char const * string, int * destination)
 
 
 static
-int print_nonnegative_int(int value)
+int fput_nonnegative_int(int value, FILE * stream)
 {
     char buffer[sizeof(STRINGIFY(INT_MAX))];
     char * string = buffer + sizeof(buffer);
@@ -303,16 +303,16 @@ int print_nonnegative_int(int value)
         *--string = digit + '0';
     }
     while(value);
-    return fputs(string, stdout);
+    return fputs(string, stream);
 }
 
 
 static
-int print_events_for_fd(int fd, short flags)
+int fput_events_for_fd(int fd, short flags, FILE * stream)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
-    if(print_nonnegative_int(fd) == EOF)
+    if(fput_nonnegative_int(fd, stream) == EOF)
     {
         return EOF;
     }
@@ -320,14 +320,14 @@ int print_events_for_fd(int fd, short flags)
     {
         if(event->flag & flags)
         {
-            if(fputc(' ', stdout) == EOF
-            || fputs(event->name, stdout) == EOF)
+            if(fputc(' ', stream) == EOF
+            || fputs(event->name, stream) == EOF)
             {
                 return EOF;
             }
         }
     }
-    return fputc('\n', stdout);
+    return fputc('\n', stream);
 }
 
 
@@ -520,7 +520,7 @@ int main(int argc, char * * argv)
     {
         if(polls->revents)
         {
-            if(print_events_for_fd(polls->fd, polls->revents) == EOF)
+            if(fput_events_for_fd(polls->fd, polls->revents, stdout) == EOF)
             {
                 return error_writing_output(arg0);
             }
