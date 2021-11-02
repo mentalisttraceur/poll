@@ -88,40 +88,38 @@ struct event
     char const * const name;
 };
 
-#define EVENT(name) { POLL ## name, # name }
-
 struct event const events[] =
 {
-    EVENT(IN),
-    EVENT(OUT),
-    EVENT(PRI),
+    {POLLIN, "IN"},
+    {POLLOUT, "OUT"},
+    {POLLPRI, "PRI"},
 /* These flags used to be in a POSIX extention: sometimes undefined. */
 #ifdef POLLRDNORM
-    EVENT(RDNORM),
+    {POLLRDNORM, "RDNORM"},
 #endif
 #ifdef POLLRDBAND
-    EVENT(RDBAND),
+    {POLLRDBAND, "RDBAND"},
 #endif
 #ifdef POLLWRNORM
-    EVENT(WRNORM),
+    {POLLWRNORM, "WRNORM"},
 #endif
 #ifdef POLLWRBAND
-    EVENT(WRBAND),
+    {POLLWRBAND, "WRBAND"},
 #endif
 /* These flags seem to be Linux/GNU -specific: typically undefined. */
 #ifdef POLLMSG
-    EVENT(MSG),
+    {POLLMSG, "MSG"},
 #endif
 #ifdef POLLRDHUP
-    EVENT(RDHUP),
+    {POLLRDHUP, "RDHUP"},
 #endif
 /* result-only flags go at the bottom, so that command-line arguments are
 checked against them last - they are ignored in the "events" field on all
 systems as far as I know, so this code allows them to be set when polling by
 inclusion in command-line */
-    EVENT(ERR),
-    EVENT(HUP),
-    EVENT(NVAL)
+    {POLLERR, "ERR"},
+    {POLLHUP, "HUP"},
+    {POLLNVAL, "NVAL"}
 };
 
 static const size_t event_count = sizeof(events) / sizeof(struct event);
