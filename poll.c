@@ -474,10 +474,10 @@ int main(int argc, char * * argv)
     short flags = 0;
     nfds_t fdGroup_i = 0;
  
-    for(; *argv; argv += 1)
+    do
     {
         int fd;
-        if(parse_nonnegative_int(*argv, &fd))
+        if(parse_nonnegative_int(arg, &fd))
         {
             /* If there were flags since the last FD, we need to apply them: */
             if(flags)
@@ -491,15 +491,16 @@ int main(int argc, char * * argv)
             continue;
         }
   
-        short flag = parse_event(*argv);
+        short flag = parse_event(arg);
         if(flag)
         {
             flags |= flag;
             continue;
         }
   
-        return error_bad_file_descriptor_or_event(*argv, arg0);
+        return error_bad_file_descriptor_or_event(arg, arg0);
     }
+    while((arg = *++argv));
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
 
