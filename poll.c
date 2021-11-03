@@ -12,7 +12,7 @@ before any `#include` directive.
 #include <limits.h> /* INT_MAX */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* EOF, FILE, fputc, fputs, perror, stderr, stdout */
-#include <stdlib.h> /* calloc */
+#include <stdlib.h> /* calloc, qsort */
 #include <string.h> /* strlen, strcmp, strncmp */
 
 /* Standard UNIX/Linux (POSIX/SUS base) headers */
@@ -29,7 +29,7 @@ before any `#include` directive.
 #define EXIT_EXECUTION_ERROR 4
 
 
-char const version_text[] = "poll 1.0.0\n";
+char const version_text[] = "poll 1.1.0\n";
 
 char const help_text[] =
     "Wait until at least one event happens on at least one file descriptor.\n"
@@ -351,6 +351,13 @@ void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
 
 
 static
+int pollfdcmp(void const * poll1, void const * poll2)
+{
+    return ((struct pollfd * )poll1)->fd - ((struct pollfd * )poll2)->fd;
+}
+
+
+static
 nfds_t merge_polls(struct pollfd * polls, nfds_t count)
 {
     struct pollfd const * end = polls + count;
@@ -502,8 +509,10 @@ int main(int argc, char * * argv)
     }
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
- 
+
     nfds = merge_polls(polls, nfds);
+
+    qsort(polls, nfds, sizeof(struct pollfd), pollfdcmp);
 
     int result = poll(polls, nfds, timeout);
     if(result < 0)
