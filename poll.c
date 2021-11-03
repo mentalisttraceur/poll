@@ -176,7 +176,7 @@ static
 int error_bad_descriptor_or_event(char * argument, char * arg0)
 {
     if(fputs(arg0, stderr) != EOF
-    && fputs(": bad descriptor or event: ", stderr) != EOF
+    && fputs(": bad file descriptor or event: ", stderr) != EOF
     && fputs(argument, stderr) != EOF)
     {
         fputc('\n', stderr);
