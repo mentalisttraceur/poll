@@ -308,7 +308,7 @@ int fput_nonnegative_int(int value, FILE * stream)
 
 
 static
-int fput_events_for_fd(int fd, short flags, FILE * stream)
+int fput_result_line(int fd, short flags, FILE * stream)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
@@ -520,7 +520,7 @@ int main(int argc, char * * argv)
     {
         if(polls->revents)
         {
-            if(fput_events_for_fd(polls->fd, polls->revents, stdout) == EOF)
+            if(fput_result_line(polls->fd, polls->revents, stdout) == EOF)
             {
                 return error_writing_output(arg0);
             }
