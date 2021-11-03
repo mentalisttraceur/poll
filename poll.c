@@ -125,7 +125,7 @@ static const size_t event_count = sizeof(events) / sizeof(struct event);
 
 
 static
-int error_need_poll(char * arg0)
+int error_need_descriptor_or_event(char * arg0)
 {
     if(fputs(arg0, stderr) != EOF)
     {
@@ -394,7 +394,7 @@ int main(int argc, char * * argv)
         {
             arg0 = "";
         }
-        return error_need_poll(arg0);
+        return error_need_descriptor_or_event(arg0);
     }
 
     argv += 1;
@@ -444,7 +444,7 @@ int main(int argc, char * * argv)
 
         if(!arg)
         {
-            return error_need_poll(arg0);
+            return error_need_descriptor_or_event(arg0);
         }
     }
 
