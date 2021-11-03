@@ -358,29 +358,22 @@ int pollfdcmp(void const * poll1, void const * poll2)
 
 
 static
-nfds_t merge_polls(struct pollfd * polls, nfds_t count)
+nfds_t merge_sorted_polls(struct pollfd * polls, nfds_t count)
 {
-    struct pollfd const * end = polls + count;
-    struct pollfd const * last = end - 1;
-    for(; polls < last; polls += 1)
+    struct pollfd const * const end = polls + count;
+    struct pollfd * last_unique = polls;
+    struct pollfd const * next = polls + 1;
+    for(; next < end; next += 1)
     {
-        struct pollfd * rest = polls + 1;
-        while(rest < end)
+        if(last_unique->fd == next->fd)
         {
-            if(rest->fd == polls->fd)
-            {
-                polls->events |= rest->events;
-                /* Fill up the now-unused hole in the array */
-                /* by pulling the end of the array into it: */
-                *rest = *last;
-                end -= 1;
-                last -= 1;
-                count -= 1;
-            }
-            else
-            {
-                rest += 1;
-            }
+            last_unique->events |= next->events;
+            count -= 1;
+        }
+        else
+        {
+            last_unique += 1;
+            *last_unique = *next;
         }
     }
     return count;
@@ -510,9 +503,9 @@ int main(int argc, char * * argv)
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
 
-    nfds = merge_polls(polls, nfds);
-
     qsort(polls, nfds, sizeof(struct pollfd), pollfdcmp);
+
+    nfds = merge_sorted_polls(polls, nfds);
 
     int result = poll(polls, nfds, timeout);
     if(result < 0)
