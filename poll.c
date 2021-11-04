@@ -29,7 +29,7 @@ before any `#include` directive.
 #define EXIT_EXECUTION_ERROR 4
 
 
-char const version_text[] = "poll 1.1.0\n";
+char const version_text[] = "poll 1.1.1\n";
 
 char const help_text[] =
     "Wait until at least one event happens on at least one file descriptor.\n"
@@ -433,8 +433,6 @@ int main(int argc, char * * argv)
             timeout_arg = arg + 1;
         }
         else
-        /* If it is *not* the "end of options" ("--") "option": */
-        if(strcmp(arg, "-"))
         {
             return error_bad_option(arg - 1, arg0);
         }
