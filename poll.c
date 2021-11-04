@@ -173,7 +173,7 @@ int error_bad_timeout(char * timeout, char * arg0)
 
 
 static
-int error_bad_descriptor_or_event(char * argument, char * arg0)
+int error_bad_file_descriptor_or_event(char * argument, char * arg0)
 {
     if(fputs(arg0, stderr) != EOF
     && fputs(": bad file descriptor or event: ", stderr) != EOF
@@ -498,7 +498,7 @@ int main(int argc, char * * argv)
             continue;
         }
   
-        return error_bad_descriptor_or_event(*argv, arg0);
+        return error_bad_file_descriptor_or_event(*argv, arg0);
     }
     /* Need to apply flags to last FD group: */
     applyFlagsToFDGroup(flags, &nfds, &fdGroup_i, polls);
