@@ -36,7 +36,7 @@ char const help_text[] =
     "\n"
     "Usage:\n"
     "    poll [--timeout=<timeout>] [[<file descriptor>]... [<event>]...]...\n"
-    "    poll (--help | --version)\n"
+    "    poll (--help | --version) [<ignored>]...\n"
     "\n"
     "Options:\n"
     "    -h --help               show this help text\n"
