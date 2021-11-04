@@ -140,7 +140,7 @@ int error_need_timeout(char * arg0)
 {
     if(fputs(arg0, stderr) != EOF)
     {
-        fputs(": need timeout argument\n", stderr);
+        fputs(": need timeout option argument\n", stderr);
     }
     return EXIT_USAGE_ERROR;
 }
