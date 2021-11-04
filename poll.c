@@ -35,7 +35,7 @@ char const help_text[] =
     "Wait until at least one event happens on at least one file descriptor.\n"
     "\n"
     "Usage:\n"
-    "    poll [--timeout=<timeout>] [[<descriptor>]... [<event>]...]...\n"
+    "    poll [--timeout=<timeout>] [[<file descriptor>]... [<event>]...]...\n"
     "    poll (--help | --version)\n"
     "\n"
     "Options:\n"
