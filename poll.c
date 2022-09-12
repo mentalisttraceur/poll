@@ -29,13 +29,15 @@ before any `#include` directive.
 #define EXIT_EXECUTION_ERROR 4
 
 
-char const version_text[] = "poll 1.1.1\n";
+#error 2.0.0 is not yet implemented
+char const version_text[] = "poll 2.0.0\n";
 
 char const help_text[] =
-    "Wait until at least one event happens on at least one file descriptor.\n"
+    "Check or wait for state change events on file descriptors.\n"
     "\n"
     "Usage:\n"
-    "    poll [--timeout=<ms>] [[<file descriptor>]... [<event>]...]...\n"
+    "    poll [--timeout=<ms>] <event>...\n"
+    "    poll [--timeout=<ms>] (<file descriptor>... [<event>]...)...\n"
     "    poll (--help | --version) [<ignored>]...\n"
     "\n"
     "Options:\n"
@@ -43,42 +45,50 @@ char const help_text[] =
     "    -V --version       show version text\n"
     "    -t --timeout=<ms>  upper limit on waiting (in milliseconds)\n"
     "\n"
+    "Input/Output:"
+    "    standard input   polled if no <file descriptor> is given\n"
+    "    standard output  all events that happened, grouped into lines by\n"
+    "                     file descriptor, with the format <output line>\n"
+    "\n"
+    "Format:\n"
+    "    <event>    <normal> | <special>\n"
+    "    <normal>   IN | OUT | PRI"
+#ifdef POLLRDNORM
+    " | RDNORM"
+#endif
+#ifdef POLLRDBAND
+    " | RDBAND"
+#endif
+#ifdef POLLWRNORM
+    " | WRNORM"
+#endif
+#ifdef POLLWRBAND
+    " | WRBAND"
+#endif
+#ifdef POLLMSG
+    " | MSG"
+#endif
+#ifdef POLLRDHUP
+    " | RDHUP"
+#endif
+    "\n"
+    "    <special>  ERR | HUP | NVAL\n"
+    "\n"
+    "    <file descriptor>  (0|1|2|3|4|5|6|7|8|9)...\n"
+    ""
+    "    <output line>  <file descriptor> <event>...
+    "\n"
     "Exits:\n"
     "    " STRINGIFY(EXIT_ASKED_EVENT_OR_INFO)
-    "  got at least one event that was asked for\n"
+    "  got at least one event that was checked for\n"
     "    " STRINGIFY(EXIT_UNASKED_EVENT)
-    "  got only always-polled events that were not asked for\n"
+    "  got only special events that were not checked for\n"
     "    " STRINGIFY(EXIT_NO_EVENT)
     "  got no events within <timeout> milliseconds\n"
     "    " STRINGIFY(EXIT_USAGE_ERROR)
     "  error in how the poll command was called\n"
     "    " STRINGIFY(EXIT_EXECUTION_ERROR)
     "  error when trying to carry out the poll command\n"
-    "\n"
-    "Normal events:\n"
-    "    IN OUT PRI"
-#ifdef POLLRDNORM
-    " RDNORM"
-#endif
-#ifdef POLLRDBAND
-    " RDBAND"
-#endif
-#ifdef POLLWRNORM
-    " WRNORM"
-#endif
-#ifdef POLLWRBAND
-    " WRBAND"
-#endif
-#ifdef POLLMSG
-    " MSG"
-#endif
-#ifdef POLLRDHUP
-    " RDHUP"
-#endif
-    "\n"
-    "\n"
-    "Always-polled events:\n"
-    "    ERR HUP NVAL\n"
 ;
 
 struct event
