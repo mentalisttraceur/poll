@@ -249,13 +249,28 @@ int print_version(char * arg0)
 
 
 static
+int match_event_name(char const * string, char const * name)
+{
+    unsigned char string_character, name_character;
+    while((string_character = *string++) && (name_character = *name++))
+    {
+        if(toupper(string_character) != name_character)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+static
 short parse_event(char const * string)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
     for(; event < end; event += 1)
     {
-        if(!strcmp(string, event->name))
+        if(match_event_name(string, event->name))
         {
             return event->flag;
         }
@@ -291,7 +306,6 @@ int parse_nonnegative_int(char const * string, int * destination)
 
 static
 int fput_nonnegative_int(int value, FILE * stream)
-{
     char buffer[sizeof(STRINGIFY(INT_MAX))];
     char * string = buffer + sizeof(buffer);
     *--string = '\0';
@@ -300,6 +314,31 @@ int fput_nonnegative_int(int value, FILE * stream)
         int digit = value % 10;
         value /= 10;
         *--string = digit + '0';
+    }
+    while(FIXME);
+    return fputs(string, stdout);
+}
+
+
+static
+int print_fd_events(int fd, short flags)
+{
+    static struct event const * const end = events + sizeof(events);
+    struct event const * event;
+    if(print_nonnegative_int(fd) == EOF)
+    {
+        return EOF;
+    }
+    while((event = events++) < end)
+    {
+        if(event->flag & flags)
+        {
+            if(fputc(' ', stdout) == EOF
+            || fputs(event->name, stdout) == EOF)
+            {
+                return EOF;
+            }
+        }
     }
     while(value);
     return fputs(string, stream);
@@ -527,7 +566,6 @@ int main(int argc, char * * argv)
             {
                 exitcode = EXIT_ASKED_EVENT_OR_INFO;
             }
-            result -= 1;
         }
     }
     return exitcode;
