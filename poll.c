@@ -29,11 +29,13 @@ before any `#include` directive.
 #define EXIT_EXECUTION_ERROR 4
 
 
+#if 0
 #error 2.0.0 is not yet implemented
-char const version_text[] = "poll 2.0.0\n";
+#endif
 
 char const help_text[] =
     "Check or wait for state change events on file descriptors.\n"
+    "If no file descriptor is given, standard input is polled.\n"
     "\n"
     "Usage:\n"
     "    poll [--timeout=<ms>] <event>...\n"
@@ -44,6 +46,47 @@ char const help_text[] =
     "    -h --help          show this help text\n"
     "    -V --version       show version text\n"
     "    -t --timeout=<ms>  upper limit on waiting (in milliseconds)\n"
+    "                       [format: <digit>...]\n"
+    "\n"
+    "Arguments:\n"
+    "    <event>            either an event that can be polled for such as\n"
+    "                       reported on a file descriptor\n"
+    "    <file descriptor>                                        \n"
+    "\n"
+    "Output:\n"
+    "TODO choose 1\n"
+    "    a line for each result event [format: <file descriptor> <event>]\n"
+    "TODO or 2\n"
+    "    all events that happened, grouped into lines by file descriptor\n"
+    "    [format: <file descriptor> <event>]\n"
+    "TODO end"
+    "\n"
+    "Format:\n"
+    "    <event>    <normal> | <special>\n"
+    "    <normal>   IN | OUT | PRI"
+#ifdef POLLRDNORM
+    " | RDNORM"
+#endif
+#ifdef POLLRDBAND
+    " | RDBAND"
+#endif
+#ifdef POLLWRNORM
+    " | WRNORM"
+#endif
+#ifdef POLLWRBAND
+    " | WRBAND"
+#endif
+#ifdef POLLMSG
+    " | MSG"
+#endif
+#ifdef POLLRDHUP
+    " | RDHUP"
+#endif
+    "\n"
+    "    <special>  ERR | HUP | NVAL\n"
+    "\n"
+    "    <file descriptor>  <digit>...\n"
+    "    <digit>            0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9\n"
     "\n"
     "Input/Output:"
     "    standard input   polled if no <file descriptor> is given\n"
