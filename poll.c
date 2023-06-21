@@ -385,7 +385,7 @@ nfds_t merge_sorted_polls(struct pollfd * polls, nfds_t count)
 int main(int argc, char * * argv)
 {
     char * arg;
-    char * arg0 = *argv;
+    char * arg0 = *argv++;
     char * timeout_arg = 0;
     int timeout = -1;  /* default timeout is no timeout */
     nfds_t nfds;
@@ -399,8 +399,7 @@ int main(int argc, char * * argv)
         return error_need_descriptor_or_event(arg0);
     }
 
-    argv += 1;
-    arg = *argv;
+    arg = *argv++;
  
     if(*arg == '-')
     {
@@ -416,8 +415,7 @@ int main(int argc, char * * argv)
 
         if(!strcmp(arg, "-timeout") || !strcmp(arg, "t"))
         {
-            argv += 1;
-            arg = *argv;
+            arg = *argv++;
             if(!arg)
             {
                 return error_need_timeout(arg0);
@@ -439,8 +437,7 @@ int main(int argc, char * * argv)
             return error_bad_option(arg - 1, arg0);
         }
 
-        argv += 1;
-        arg = *argv;
+        arg = *argv++;
 
         if(!arg)
         {
