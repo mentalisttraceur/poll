@@ -307,14 +307,10 @@ int fput_nonnegative_int(int value, FILE * stream)
 
 
 static
-int fput_result_line(int fd, short flags, FILE * stream)
+int fput_events(short flags, FILE * stream)
 {
     static struct event const * const end = events + event_count;
     struct event const * event = events;
-    if(fput_nonnegative_int(fd, stream) == EOF)
-    {
-        return EOF;
-    }
     for(; event < end; event += 1)
     {
         if(event->flag & flags)
@@ -326,7 +322,35 @@ int fput_result_line(int fd, short flags, FILE * stream)
             }
         }
     }
+    return 0;
+}
+
+
+static
+int fput_poll_result(struct pollfd poll, FILE * stream)
+{
+    if(fput_nonnegative_int(fd, stream) == EOF
+    || fput_events(polls.revents, stream) == EOF)
+    {
+        return EOF;
+    }
     return fputc('\n', stream);
+}
+
+
+static
+int print_poll_results(struct pollfd * polls, int result, char * arg0)
+{
+    for(; result; polls += 1)
+    {
+        if(poll->revents)
+        {
+            if(fputs_poll_results(*polls, stdout) == EOF)
+            {
+                return error_writing_output(arg0);
+            }
+        }
+    }
 }
 
 
@@ -520,7 +544,9 @@ int main(int argc, char * * argv)
     {
         if(polls->revents)
         {
-            if(fput_result_line(polls->fd, polls->revents, stdout) == EOF)
+            if(fput_nonnegative_int(polls->fd, stdout) == EOF
+            || fput_events(polls->revents, stdout) == EOF
+            || fputc('\n', stdout) == EOF)
             {
                 return error_writing_output(arg0);
             }
