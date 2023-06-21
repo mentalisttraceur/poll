@@ -331,9 +331,10 @@ int fput_result_line(int fd, short flags, FILE * stream)
 
 
 static
-void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
-                         struct pollfd * polls)
+void applyFlagsToFDGroup(short flags, nfds_t * nfds, struct pollfd * polls)
+void apply_flags(short flags, struct pollfd * polls, struct pollfd * * end)
 {
+    struct pollfd const * end;
     /*\
     If no prior FD arguments, increment nfds to use the default poll as this
     FD group:
@@ -342,10 +343,11 @@ void applyFlagsToFDGroup(short flags, nfds_t * nfds, nfds_t * fdGroup_i,
     {
         *nfds = 1;
     }
+    end = polls + *nfds;
     /* Apply flags to FD group: */
-    for(; *fdGroup_i < *nfds; *fdGroup_i += 1)
+    for(; polls < end; polls += 1)
     {
-        polls[*fdGroup_i].events = flags;
+        polls->events = flags;
     }
 }
 
