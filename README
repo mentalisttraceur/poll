@@ -282,6 +282,25 @@ emulating the raw poll(2) interface which allows multiple entries for any file
 descriptors, and correspondingly returns results differently (in separate
 revents fields).
 
+For example, say you want to poll FD 3 for both POLLIN and POLLOUT, and FD 4
+for POLLHUP, but instead of specifying it as just `poll 3 IN OUT 4 HUP` you do
+`poll 3 IN 4 HUP 3 OUT` (maybe you're building the arguments to poll in a
+script, and this way is easier). With the not-merged way, if they all matched,
+the output would look something like this:
+
+    3 IN
+    4 HUP
+    3 OUT
+
+With the merged way, the output looks like this:
+
+    3 IN OUT
+    4 HUP
+
+To me, it seems much more useful for the output to look like the latter: I'm
+hardpressed to think of a time where the latter is truly disadvantageous to the
+latter.
+
 
 7. malloc without free
 
@@ -312,7 +331,128 @@ to notice that it never calls free, and add it if needed accordingly. (I do not
 subscribe to the "shouldn't have to think about it" school of thought about
 situations like this.)
 
-As for "good practice" more generally speaking: "good practice" ought not be
-just some absolute mores: they're rules of thumb to remind us of what's usually
-good: and in this case, I'd say none of the things that are good about freeing
-memory that you've malloc'ed apply here.
+As for "good practice" more generally speaking: "good practice" should end at
+the point where it starts to make the code worse, and my current view is that
+none of the things that are good about freeing memory that you've malloc'ed
+apply here, but have the free at the end would actually worsen the code for the
+above reasons.
+
+
+8. Using raw IO primitives over stdio IO functions
+
+I've chosen to use `write(3)` and `writev(3)` in this code instead of the more
+familiar stdio functions, because of my general weariness of the overhead
+involved in the stdio functions for the small, print-one-message-then-exit
+needs of this poll program.
+
+For example, a seven-line help message in one `puts(3)` or `fwrite(3)` call
+invokes more than eight syscalls on my device! Seven to `write(2)`, preceded by
+an `mmap2(2)` and for some reason some syscall to check the state of FD 1.
+Naturally, this has to do with the details of the implementation: stdout is
+typically line bufferred when it points to an interactive terminal, though the
+standard allows it to be fully-bufferred in other cases (such as redirection to
+a file). The line-bufferring means it invokes write whenever it hits a newline.
+
+stderr has better behavior, typically: it starts of unbufferred in most
+implementations, and the "unbufferred" nature seems to default to a reasonable
+one-syscall-per-invocation pattern. (But I'm not convinced an implementation
+would be non-standard for invoking a `write(2)` for every single character on
+an unbufferred file stream like that - pathological and wrong for other
+reasons, but not against the specification as I understand it.)
+
+Furthermore your typical stdio functions can contain other overhead, such as
+locking to keep multiple threads from mangling the internal state of the stream
+and other features optimized for the common and/or naive (and/or thoughtless?)
+usecases.
+
+Meanwhile, `write(3)` and `writev(3)`, being thin wrappers around `write(2)`
+and `writev(2)` syscalls, are much more efficient for the rather narrow task we
+need IO for in these small command-line tools. No extra copying, no extra pass
+over the data, no more syscalls than the reasonable minimum (unless you're on
+an old implementation where `writev(3)` has to be "faked" by the C library, but
+that's not common in modern systems as far as I know, and either way you're not
+likely to be worse-off than with the stdio functions, performance-wise).
+
+
+9. Raw IO primitives without error checks, wrapper loops, etc:
+
+After carefully considering my use of `write(3)` and `writev(3)` functions, I
+think there's no additional value, and possible risk of problems, in trying to
+evaluate their return values and acting accordingly, for the basic usecase of
+"print an error message" or "print result".
+
+write basically returns the number of characters written, or errors out and
+returns -1. Let's reviews the cases:
+
+* If it returns exactly the number of characters that we asked it to write,
+then all is good.
+
+* If the write was interrupted by a signal - well, this code has no signal
+handlers: if it's hit by a signal while it's in a write/writev, it won't be
+returning out of write/writev, as I understand it. So while it would be good to
+handle EINTR and partial writes for that reason generally, it doesn't apply in
+this case.
+
+* If we have a blocking file descriptor, we could also get a partial write. But
+as I understand it from the standards and manpages, the only way a partial
+write happens on a blocking file descriptor is if we've hit a limit/error, so
+the kernel wrote some of our data, then had to bail. For example, we write help
+text out, but stdout is redirected to a file, and the partition whether that
+filepath is stored gets filled. In short, while it's a "partial success", for
+the purposes of a small command-line program which does writes only to give
+result/error messages, it's the same as getting an error (see next case).
+
+* If it errors out when we're wring to stderr, what can we do? I've looked at POSIX/SUSv3, Linux, OpenBSD,
+and FreeBSD documentation: the errors are generally not something we can do
+anything about. The few we can act on would require making assumptions about
+what the user wants: For example, let's say we get EBADF when writing an error:
+maybe the user invoked us with `2>&-` (with FD 2, a.k.a. stderr, closed), or we
+get EIO because of some low-level error when our stderr is redirected to some
+file. We can't exactly print another error message: where to print it? Picking
+any other FD (like stdout) could be an unexpected, unintuitive, and even
+undesireable choice for the user.
+
+* If it errors out when we're writing to something other than stderr, writing
+an error message to stderr, and/or changing the exit status from a success to a
+failure, is reasonable. (But this is complicated if the exit status is useful
+on its own, without the output, e.g. `grep`, or my own `poll` tool). Even then,
+I'm hard-pressed to say that `1>&-` (closing FD 1) isn't a very valid way for
+the invoking shell user/script to say "I don't want your stdout" (it's even
+slightly more portable than the idiomatic `1>/dev/null` - e.g. minimal shell
+ports to Windows, like busybox-w32, don't have fake filesystem or special
+handling for specific filepaths, so no /dev/null there). Is that an error or
+user intention?
+
+* If we have a non-blocking (`O_NONBLOCK`) FD, we could get a partial write,
+`EAGAIN` or `EWOULDBLOCK`. Semantically, I don't like distinguishing these as
+one being an error, the other being a (partial) success: historical variants
+returned zero for the latter, not an error return, and they're both essentially
+saying the same thing: "I can't write more data at this moment; I was able to
+write X bytes", just in one case, X is zero. I've looked at a couple of stdio.h
+implementations, and they do distinguish, as does conventional practice - there
+seems to be a tendency to "always loop on partial write to write again". BUT,
+those are not representative of this minimal usecase: remember, if we want to
+allow for transparent recovering from a signal interruption, then the loop on
+partial write is already justified - but we don't need that in a tool that
+doesn't ever handle signals: if it ignores, indefinitely blocks, or expects to
+die for all possible signals. If we look at this case alone, really there is
+one question: should a simple command-line tool handle the case of its stdout
+and/or stderr being non-blocking (when they're used for typical result/error
+output and not for a usecase where non-blocking FDs are obviously relevant)? If
+the answer is yes, then there are a couple of ways to deal with this: looping
+more writes until all contents are written out, ideally first waiting for
+writing to become possible again, e.g. with a `poll(2)`. Another way would be
+to just use `fcntl(2)` with `F_SETFL` (and perhaps `F_GETFL`) to disable the
+`O_NONBLOCK` flag (and perhaps not clobber other flags), though I don't know if
+doing that would always be safe (e.g. I don't know if the underlying file
+description could in some unusual instances share/propagate the nonblocking
+flag to another process.)
+
+There's no consistent precedent among command-line tools I know of: e.g. I'd
+expect a `--help` to exit with an error code if the help text couldn't be
+written: that's the whole point of the help! But a lot of tools don't bother
+to check for that case (try: `bash --help 1>&-; echo $?`). And many tools will
+ignore inability to write to their stdout, even when that's their primary task.
+For instance, busybox versions of `printf` and `grep` prints no error message
+when run with stdout closed. On the other hand, the busybox `echo hi 1>&-` does
+print an error, as do manu GNU versions of those utilities.
